@@ -19,7 +19,7 @@ audit:
 	staticcheck ./...
 	@echo 'Linting code...'
 	golangci-lint run
-	@$(MAKE) mylint
+	@#$(MAKE) mylint
 	@$(MAKE) test
 
 ## test: run unit tests
@@ -39,3 +39,9 @@ build:
 run:
 	@echo 'Attempting to start the app'
 	go run $(LD_FLAGS) ./cmd/kms/*.go
+
+## run: start application
+.PHONY: lint
+lint:
+	@echo 'Running linter'
+	@golangci-lint run

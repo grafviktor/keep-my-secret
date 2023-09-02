@@ -1,19 +1,23 @@
 package auth
 
 import (
-	"github.com/grafviktor/keep-my-secret/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/stretchr/testify/require"
+
+	"github.com/grafviktor/keep-my-secret/internal/config"
 )
+
+const cookieName = "refresh_cookie"
 
 func TestGetRefreshCookie(t *testing.T) {
 	// Initialize your Auth object with relevant settings
 	auth := &Auth{
-		CookieName:    "refresh_cookie",
+		CookieName:    cookieName,
 		CookiePath:    "/",
 		RefreshExpiry: 24 * time.Hour,
 	}
@@ -23,8 +27,8 @@ func TestGetRefreshCookie(t *testing.T) {
 	cookie := auth.GetRefreshCookie(refreshToken)
 
 	// Assert that the cookie has the expected values
-	if cookie.Name != "refresh_cookie" {
-		t.Errorf("Expected cookie name 'refresh_cookie', got '%s'", cookie.Name)
+	if cookie.Name != cookieName {
+		t.Errorf("Expected cookie name '%s', got '%s'", cookieName, cookie.Name)
 	}
 
 	if cookie.Path != "/" {
@@ -103,8 +107,8 @@ func TestVerifyAuthHeader(t *testing.T) {
 	}
 	ac := config.New(envConfig)
 
-	//JWTSecret := ac.Secret
-	//JWTIssuer := ac.JWTIssuer
+	// JWTSecret := ac.Secret
+	// JWTIssuer := ac.JWTIssuer
 
 	// Create a test HTTP request with an Authorization header
 	req, err := http.NewRequest("GET", "/", nil)
@@ -136,9 +140,11 @@ func TestVerifyAuthHeader(t *testing.T) {
 		t.Errorf("Expected token '%s', got '%s'", tokenString, token)
 	}
 
-	if claims == nil {
-		t.Error("Expected non-nil claims")
-	}
+	require.NotNil(t, claims)
+
+	// if claims == nil {
+	// 	t.Error("Expected non-nil claims")
+	// }
 
 	if claims.Issuer != ac.JWTIssuer {
 		t.Errorf("Expected issuer '%s', got '%s'", ac.JWTIssuer, claims.Issuer)
@@ -153,7 +159,6 @@ func TestVerifyAuthHeader(t *testing.T) {
 		{"InvalidHeader", "invalid auth header"},
 		{"Bearer InvalidToken", "token contains an invalid number of segments"},
 		{"Bearer " + generateJWTToken("WrongSecret", ac.JWTIssuer, time.Now().Add(1*time.Hour)), "signature is invalid"},
-		//{"Bearer " + generateJWTToken(ac.Secret, ac.JWTIssuer, time.Now().Add(1*time.Hour)), "unexpected signing method HS256"},
 		{"Bearer " + generateJWTToken(ac.Secret, ac.JWTIssuer, time.Now().Add(-1*time.Hour)), "expired token"},
 		{"Bearer " + generateJWTToken(ac.Secret, "WrongIssuer", time.Now().Add(1*time.Hour)), "invalid issuer"},
 	}

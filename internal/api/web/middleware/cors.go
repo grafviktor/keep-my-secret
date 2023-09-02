@@ -10,8 +10,8 @@ func (m middleware) EnableCORS(next http.Handler) http.Handler {
 
 		/*
 		 * To expose content-disposition header which can contains filename to a client when it's downloading a file.
-		 * Otherwise, the client doesn't see the filename which it's downloading in the browser. This header is simply not shown:
-		 * content-disposition: "attachment; filename=25351.pptx"
+		 * Otherwise, the client doesn't see the filename which it's downloading in the browser. This header is simply
+		 * not shown: content-disposition: "attachment; filename=25351.pptx"
 		 *
 		 * That's security restriction of the browser, not client. And this is related to CORS.
 		 */

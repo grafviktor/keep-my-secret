@@ -34,28 +34,28 @@ func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Sto
 	}
 }
 
-func parseMultiPartSecretRequest(w http.ResponseWriter, r *http.Request, secret *model.Secret) error {
+func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
 	err := r.ParseMultipartForm(maxFileSize) // Max memory to use for parsing, in this case 10MB
 	if err != nil {
-		return fmt.Errorf("SaveSecretHandler error: %s\n", err.Error())
+		return fmt.Errorf("SaveSecretHandler error: %s", err.Error())
 	}
 
 	jsonData := r.FormValue("data")
 	err = json.Unmarshal([]byte(jsonData), &secret)
 	if err != nil {
-		return fmt.Errorf("SaveSecretHandler error: %s\n", err.Error())
+		return fmt.Errorf("SaveSecretHandler error: %s", err.Error())
 	}
 
 	file, _, err := r.FormFile("file") // "file" should match the name attribute of the file input in the form
 	if err != nil {
-		return fmt.Errorf("SaveSecretHandler error: %s\n", err.Error())
+		return fmt.Errorf("SaveSecretHandler error: %s", err.Error())
 	}
 	defer file.Close()
 
 	// Read the file content into a byte slice
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("SaveSecretHandler error: %s\n", err.Error())
+		return fmt.Errorf("SaveSecretHandler error: %s", err.Error())
 	}
 
 	secret.File = fileContent
@@ -70,7 +70,7 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 	var err error
 
 	if strings.Contains(contentType, "multipart/form-data") {
-		err = parseMultiPartSecretRequest(w, r, &secret)
+		err = parseMultiPartSecretRequest(r, &secret)
 	} else {
 		err = utils.ReadJSON(w, r, &secret)
 	}
@@ -101,7 +101,18 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	secret.Encrypt(key, login+a.config.Secret)
+	err = secret.Encrypt(key, login+a.config.Secret)
+	if err != nil {
+		log.Printf("SaveSecretHandler error: %s\n", err.Error())
+
+		_ = utils.WriteJSON(w, http.StatusInternalServerError, api.Response{
+			Status:  constant.APIStatusError,
+			Message: constant.APIMessageServerError,
+			Data:    nil,
+		})
+
+		return
+	}
 
 	_, err = a.storage.SaveSecret(r.Context(), &secret, login)
 
@@ -152,7 +163,18 @@ func (a *apiRouteProvider) ListSecretsHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	for _, secret := range secrets {
-		secret.Decrypt(key, login+a.config.Secret)
+		err = secret.Decrypt(key, login+a.config.Secret)
+		if err != nil {
+			log.Printf("ListSecretsHandler error: %s\n", err.Error())
+
+			_ = utils.WriteJSON(w, http.StatusInternalServerError, api.Response{
+				Status:  constant.APIStatusError,
+				Message: constant.APIMessageServerError,
+				Data:    nil,
+			})
+
+			return
+		}
 	}
 
 	_ = utils.WriteJSON(w, http.StatusOK, api.Response{
@@ -211,7 +233,18 @@ func (a *apiRouteProvider) DownloadSecretFileHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	secret.Decrypt(key, login+a.config.Secret)
+	err = secret.Decrypt(key, login+a.config.Secret)
+	if err != nil {
+		log.Printf("DownloadSecretFileHandler error: %s\n", err.Error())
+
+		_ = utils.WriteJSON(w, http.StatusInternalServerError, api.Response{
+			Status:  constant.APIStatusError,
+			Message: constant.APIMessageServerError,
+			Data:    nil,
+		})
+
+		return
+	}
 
 	// Set headers for the download
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", secret.FileName))

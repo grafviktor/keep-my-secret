@@ -29,28 +29,29 @@ type MockStorage struct {
 	users map[string]*model.User
 }
 
+//nolint:lll
 func (mockStorage MockStorage) SaveSecret(ctx context.Context, secret *model.Secret, login string) (*model.Secret, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (mockStorage MockStorage) GetSecretsByUser(ctx context.Context, login string) (map[int]*model.Secret, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (mockStorage MockStorage) DeleteSecret(ctx context.Context, secretID, login string) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (mockStorage MockStorage) GetSecret(ctx context.Context, secretID, login string) (*model.Secret, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (mockStorage MockStorage) Close() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -70,14 +71,6 @@ func (mockStorage MockStorage) AddUser(ctx context.Context, user *model.User) (*
 }
 
 func (mockStorage MockStorage) GetUser(ctx context.Context, login string) (*model.User, error) {
-	//if login == "tony.tester@example.com" {
-	//	return &model.User{
-	//		Login:           "tony.tester@example.com",
-	//		HashedPassword:  "1",
-	//		RestorePassword: "",
-	//	}, nil
-	//}
-
 	user, ok := mockStorage.users[login]
 	if ok {
 		return user, nil
@@ -225,7 +218,7 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 	handler := newUserHandlerProvider(appConfig, &ls)
 	urlPath := "/api/v1/user/login"
 
-	//SuccessfulLogin := httpResponseTestCase{
+	// SuccessfulLogin := httpResponseTestCase{
 	//	name:        "Login credentials success",
 	//	httpHandler: handler.LoginHandler,
 	//	httpMethod:  http.MethodPost,
@@ -234,7 +227,7 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 	//		contentType: "application/json",
 	//		statusCode:  http.StatusOK,
 	//	},
-	//}
+	// }
 
 	UnsuccessfulLogin := httpResponseTestCase{
 		name:        "Login credentials error",
@@ -270,7 +263,7 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 	}
 
 	testCases := []httpResponseTestCase{
-		//SuccessfulLogin,
+		// SuccessfulLogin,
 		UnsuccessfulLogin,
 		MissingAttributesRequestLogin,
 		BadRequestLogin,

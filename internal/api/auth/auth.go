@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	// CookieName which start from '__Host-' will NOT be set if domain specified, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#cookie_prefixes
+	// CookieName which start from '__Host-' will NOT be set if domain specified,
+	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#cookie_prefixes
 	// Also, a cookie with such prefix, cannot be set over http connection
 	CookieName   = "__Host-refresh_token"
 	cookieSecure = true
