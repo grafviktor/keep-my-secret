@@ -1,0 +1,77 @@
+{
+  "extends": "airbnb",
+  "globals": {
+    "document": true,
+    "foo": true,
+    "window": true
+  },
+  "rules": {
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "warn"
+        ]
+      }
+    ],
+    "key-spacing": [
+      "error",
+      {
+        "align": {
+          "beforeColon": true,
+          "afterColon": true,
+          "on": "colon"
+        }
+      }
+    ],
+    "object-curly-newline": [
+      "error",
+      {
+        "consistent": true
+      }
+    ],
+    "object-curly-spacing": [
+      "error",
+      "never"
+    ],
+    "semi": [
+      "error",
+      "never"
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off",
+    "react/function-component-definition": [
+      "error",
+      {
+        "namedComponents": [
+          "function-declaration",
+          "arrow-function"
+        ],
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      {
+        "required": {
+          "some": [
+            "nesting",
+            "id"
+          ]
+        }
+      }
+    ],
+    "jsx-a11y/label-has-for": [
+      "error",
+      {
+        "required": {
+          "some": [
+            "nesting",
+            "id"
+          ]
+        }
+      }
+    ],
+    "react/prop-types": "off"
+  }
+}

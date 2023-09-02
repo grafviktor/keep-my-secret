@@ -1,0 +1,48 @@
+### Get frontend application
+GET https://localhost:8080/ HTTP/1.1
+
+### Register
+POST https://localhost:8080/user/register HTTP/1.1
+content-type: application/json
+
+{
+    "username": "roman",
+    "password": "1"
+}
+
+### Login
+# Don't forget to register first
+POST https://localhost:8080/user/login HTTP/1.1
+content-type: application/json
+
+{
+    "username": "roman",
+    "password": "1"
+}
+
+### Logout
+POST https://localhost:8080/user/logout HTTP/1.1
+
+###
+POST https://localhost:8080/ HTTP/1.1
+cookie: auth=0
+content-type: text/plain
+
+http://www.mail1.ru
+
+###
+
+POST https://localhost:8080/api/shorten/batch HTTP/1.1
+content-type: application/json
+
+[
+  {
+    "correlation_id": "id1",
+    "original_url": "www.mail1.ru1"
+  },
+  {
+    "correlation_id": "id2",
+    "original_url": "www.mail2.ru2"
+  }
+]
+

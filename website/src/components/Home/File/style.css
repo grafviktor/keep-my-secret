@@ -1,0 +1,12 @@
+.kms-secret-attachment {
+  display: flex;
+  align-items: center;
+}
+
+.kms-secret-attachment .row {
+  height: 100%;
+}
+
+.kms-secret-attachment .btn {
+  margin-right: 5px;
+}

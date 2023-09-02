@@ -1,0 +1,23 @@
+.kms-secret-edit {
+  height: 100%;
+  margin: 0 auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px
+}
+
+.kms-secret-edit__controls {
+  display: flex;
+  justify-content: center;
+}
+
+.kms-secret-edit__controls .btn {
+  margin: 0;
+  margin-right: 5px;
+}
+
+.kms-secret-edit__form {
+  height: 100%;
+}

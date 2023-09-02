@@ -1,0 +1,8 @@
+.kms-secret-card {
+  display: flex;
+  border-color: #eee;
+}
+
+.kms-secret-card__control-pane .btn {
+  margin-right: 1%;
+}
