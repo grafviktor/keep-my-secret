@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -18,22 +17,21 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/model"
 )
 
-type userStorage interface {
-	AddUser(ctx context.Context, user *model.User) (*model.User, error)
-	GetUser(ctx context.Context, login string) (*model.User, error)
-}
-
 type userHTTPHandler struct {
-	config  config.AppConfig
-	storage userStorage
+	config    config.AppConfig
+	storage   userStorage
+	keyCache  keyCache
+	authUtils authUtils
 }
 
 // NewApiHandler - self-explanatory
 func newUserHandlerProvider(appConfig config.AppConfig, storage userStorage) userHTTPHandler {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	return userHTTPHandler{
-		config:  appConfig,
-		storage: storage,
+		config:    appConfig,
+		storage:   storage,
+		keyCache:  keycache.GetInstance(),
+		authUtils: auth.New(appConfig),
 	}
 }
 
@@ -42,7 +40,11 @@ type credentials struct {
 	Password string `json:"password,omitempty"`
 }
 
-func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, user *model.User, cred credentials) {
+type userModel interface {
+	GetDataKey(password string) (string, error)
+}
+
+func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, user userModel, cred credentials) {
 	secret, err := user.GetDataKey(cred.Password)
 	if err != nil {
 		log.Printf("RegisterHandler error: %s\n", err.Error())
@@ -56,12 +58,10 @@ func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, use
 		return
 	}
 
-	kc := keycache.GetInstance()
-	kc.Set(cred.Login, secret)
+	h.keyCache.Set(cred.Login, secret)
 
 	jwtUser := auth.JWTUser{ID: cred.Login}
-	authUtils := auth.New(h.config)
-	tokens, err := authUtils.GenerateTokenPair(&jwtUser)
+	tokens, err := h.authUtils.GenerateTokenPair(&jwtUser)
 	if err != nil {
 		log.Printf("LoginHandler error: cannot generate tokens. Error: %s", err.Error())
 
@@ -73,7 +73,7 @@ func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, use
 
 		return
 	}
-	refreshCookie := authUtils.GetRefreshCookie(tokens.RefreshToken)
+	refreshCookie := h.authUtils.GetRefreshCookie(tokens.RefreshToken)
 	http.SetCookie(w, refreshCookie)
 
 	log.Printf("LoginUser success: Login '%s'\n", cred.Login)

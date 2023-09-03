@@ -40,7 +40,7 @@ type JWTUser struct {
 	ID string `json:"id"`
 }
 
-type TokenPairs struct {
+type TokenPair struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
@@ -62,7 +62,7 @@ func New(ac config.AppConfig) Auth {
 	}
 }
 
-func (auth *Auth) GenerateTokenPair(user *JWTUser) (TokenPairs, error) { // pair for token and refresh token
+func (auth Auth) GenerateTokenPair(user *JWTUser) (TokenPair, error) { // pair for token and refresh token
 	// Create a token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -78,7 +78,7 @@ func (auth *Auth) GenerateTokenPair(user *JWTUser) (TokenPairs, error) { // pair
 	// Create a signed token
 	signedAccessToken, err := token.SignedString([]byte(auth.Secret))
 	if err != nil {
-		return TokenPairs{}, err
+		return TokenPair{}, err
 	}
 
 	// Create a refreshToken and set claims
@@ -91,20 +91,20 @@ func (auth *Auth) GenerateTokenPair(user *JWTUser) (TokenPairs, error) { // pair
 	// Create signed refresh token
 	signedRefreshToken, err := token.SignedString([]byte(auth.Secret))
 	if err != nil {
-		return TokenPairs{}, err
+		return TokenPair{}, err
 	}
 
 	// Create token pairs and populate with signed tokens
-	tokenPairs := TokenPairs{
+	tokenPairs := TokenPair{
 		AccessToken:  signedAccessToken,
 		RefreshToken: signedRefreshToken,
 	}
 
-	// Return TokenPairs
+	// Return TokenPair
 	return tokenPairs, nil
 }
 
-func (auth *Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
+func (auth Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
 	return &http.Cookie{
 		Name:     auth.CookieName,
 		Path:     auth.CookiePath,
@@ -118,7 +118,7 @@ func (auth *Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
 }
 
 // GetExpiredRefreshCookie - For logging out
-func (auth *Auth) GetExpiredRefreshCookie() *http.Cookie {
+func (auth Auth) GetExpiredRefreshCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:     auth.CookieName,
 		Path:     auth.CookiePath,

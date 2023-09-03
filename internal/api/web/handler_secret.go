@@ -22,15 +22,17 @@ import (
 )
 
 type apiRouteProvider struct {
-	config  config.AppConfig
-	storage storage.Storage
+	config   config.AppConfig
+	storage  storage.Storage
+	keyCache keyCache
 }
 
 // NewApiHandler - self-explanatory
 func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Storage) apiRouteProvider {
 	return apiRouteProvider{
-		config:  appConfig,
-		storage: appStorage,
+		config:   appConfig,
+		storage:  appStorage,
+		keyCache: keycache.GetInstance(),
 	}
 }
 
@@ -88,7 +90,7 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	login := r.Context().Value(api.ContextUserLogin).(string)
-	key, err := keycache.GetInstance().Get(login)
+	key, err := a.keyCache.Get(login)
 	if err != nil {
 		log.Printf("SaveSecretHandler error: %s\n", err.Error())
 
@@ -136,7 +138,7 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 
 func (a *apiRouteProvider) ListSecretsHandler(w http.ResponseWriter, r *http.Request) {
 	login := r.Context().Value(api.ContextUserLogin).(string)
-	key, err := keycache.GetInstance().Get(login)
+	key, err := a.keyCache.Get(login)
 	if err != nil {
 		log.Printf("ListSecretsHandler error: %s\n", err.Error())
 
@@ -210,7 +212,7 @@ func (a *apiRouteProvider) DownloadSecretFileHandler(w http.ResponseWriter, r *h
 	login := r.Context().Value(api.ContextUserLogin).(string)
 	secretID := chi.URLParam(r, "id")
 
-	key, err := keycache.GetInstance().Get(login)
+	key, err := a.keyCache.Get(login)
 	if err != nil {
 		log.Printf("DownloadSecretFileHandler error: %s\n", err.Error())
 

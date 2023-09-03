@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/grafviktor/keep-my-secret/internal/api/auth"
+
 	"github.com/grafviktor/keep-my-secret/internal/constant"
 	"github.com/grafviktor/keep-my-secret/internal/model"
 
@@ -293,5 +295,98 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 
 			_ = received.Body.Close()
 		})
+	}
+}
+
+type MockUser struct{}
+
+func (u *MockUser) GetDataKey(password string) (string, error) {
+	//nolint:goconst
+	return "mocked-secret", nil
+}
+
+type MockKeyCache struct {
+	setCalled      bool
+	setLogin       string
+	setSecret      string
+	getCalled      bool
+	getLogin       string
+	getReturnValue string
+}
+
+func (kc *MockKeyCache) Set(login, secret string) {
+	kc.setCalled = true
+	kc.setLogin = login
+	kc.setSecret = secret
+}
+
+func (kc *MockKeyCache) Get(login string) (string, error) {
+	kc.getCalled = true
+	kc.getLogin = login
+	return kc.getReturnValue, nil
+}
+
+type MockAuthUtils struct {
+	generateTokenPairCalled bool
+	generateTokenPairUser   *auth.JWTUser
+	generateTokenPairReturn auth.TokenPair
+	getRefreshCookieCalled  bool
+	getRefreshCookieToken   string
+	getRefreshCookieReturn  *http.Cookie
+}
+
+func (au *MockAuthUtils) GenerateTokenPair(user *auth.JWTUser) (auth.TokenPair, error) {
+	au.generateTokenPairCalled = true
+	au.generateTokenPairUser = user
+	return au.generateTokenPairReturn, nil
+}
+
+func (au *MockAuthUtils) GetRefreshCookie(token string) *http.Cookie {
+	au.getRefreshCookieCalled = true
+	au.getRefreshCookieToken = token
+	return au.getRefreshCookieReturn
+}
+
+func TestHandleSuccessFullUserSignIn(t *testing.T) {
+	handler := &userHTTPHandler{
+		config:    config.AppConfig{},
+		keyCache:  &MockKeyCache{},
+		authUtils: &MockAuthUtils{},
+	}
+
+	// httptest.NewRequest("POST", "/signin", nil)
+	w := httptest.NewRecorder()
+
+	cred := credentials{
+		Login:    "testuser",
+		Password: "testpassword",
+	}
+
+	handler.handleSuccessFullUserSignIn(w, &MockUser{}, cred)
+
+	// Assert the behavior of MockKeyCache and MockAuthUtils
+	if !handler.keyCache.(*MockKeyCache).setCalled {
+		t.Error("Expected Set to be called on keyCache")
+	}
+	//nolint:goconst
+	if handler.keyCache.(*MockKeyCache).setLogin != "testuser" {
+		t.Errorf("Expected Set to be called with login 'testuser', but got '%s'", handler.keyCache.(*MockKeyCache).setLogin)
+	}
+	if handler.keyCache.(*MockKeyCache).setSecret != "mocked-secret" {
+		//nolint:lll
+		t.Errorf("Expected Set to be called with secret 'mocked-secret', but got '%s'", handler.keyCache.(*MockKeyCache).setSecret)
+	}
+
+	if !handler.authUtils.(*MockAuthUtils).generateTokenPairCalled {
+		t.Error("Expected GenerateTokenPair to be called on authUtils")
+	}
+	if handler.authUtils.(*MockAuthUtils).generateTokenPairUser.ID != "testuser" {
+		//nolint:lll
+		t.Errorf("Expected GenerateTokenPair to be called with user ID 'testuser', but got '%s'", handler.authUtils.(*MockAuthUtils).generateTokenPairUser.ID)
+	}
+
+	// Assert response status code
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status code %d, but got %d", http.StatusCreated, w.Code)
 	}
 }
