@@ -32,8 +32,7 @@ type MockStorage struct {
 
 //nolint:lll
 func (mockStorage MockStorage) SaveSecret(ctx context.Context, secret *model.Secret, login string) (*model.Secret, error) {
-	// TODO implement me
-	panic("implement me")
+	return nil, nil
 }
 
 func (mockStorage MockStorage) GetSecretsByUser(ctx context.Context, login string) (map[int]*model.Secret, error) {
