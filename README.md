@@ -1,5 +1,7 @@
 # Keep My Secret #
 
+[![codecov](https://codecov.io/gh/grafviktor/keep-my-secret/branch/master/graph/badge.svg?token=wrIL0tyQ5q)](https://codecov.io/gh/grafviktor/keep-my-secret)
+
 Готовое решение для хранения личных данных пользователей в зашифрованном виде. Поддерживаются следующие типы данных:
 
 * Кредитная карта
@@ -94,10 +96,6 @@
 ## Клиент ##
 
 Клиенсткая часть представляет собой SPA-приложение, которое несет в себе минимум логики (Dumb Client). Браузерный клиент легко может замененым любым другим приложением, которое может работать поверх `HTTPS`-протокола.
-
-## Test Coverage Report ##
-
-[![codecov](https://codecov.io/gh/grafviktor/keep-my-secret/branch/master/graph/badge.svg?token=wrIL0tyQ5q)](https://codecov.io/gh/grafviktor/keep-my-secret)
 
 ## Имеющиеся проблемы ##
 
