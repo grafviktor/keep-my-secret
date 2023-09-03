@@ -34,6 +34,7 @@ func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Sto
 	}
 }
 
+const maxFileSize = 1024 * 1024 * 1 // 1MB
 func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
 	err := r.ParseMultipartForm(maxFileSize) // Max memory to use for parsing, in this case 10MB
 	if err != nil {
@@ -63,7 +64,6 @@ func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
 	return nil
 }
 
-const maxFileSize = 1024 * 1024 * 1 // 1MB
 func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	var secret model.Secret

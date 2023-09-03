@@ -1,84 +1,57 @@
 package version
 
 import (
+	"bytes"
+	"io"
+	"os"
 	"testing"
 )
 
-func TestBuildVersion(t *testing.T) {
-	type testValues struct {
-		buildVersion string
-		buildDate    string
-		buildCommit  string
+func TestSetAndGet(t *testing.T) {
+	// Test Set function to update build information
+	Set("1.0", "2023-09-01", "abcdef")
+
+	// Check if the values are correctly updated
+	if BuildVersion() != "1.0" {
+		t.Errorf("Expected BuildVersion() to return '1.0', but got '%s'", BuildVersion())
 	}
 
-	tests := []struct {
-		name string
-		arg  testValues
-		want testValues
-	}{
-		{
-			name: "Set() does not accept empty values",
-			arg: testValues{
-				buildVersion: "",
-				buildDate:    "",
-				buildCommit:  "",
-			},
-			want: testValues{
-				buildVersion: "N/A",
-				buildDate:    "N/A",
-				buildCommit:  "N/A",
-			},
-		},
-		{
-			name: "Set() Build Version",
-			arg: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "",
-				buildCommit:  "",
-			},
-			want: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "N/A",
-				buildCommit:  "N/A",
-			},
-		},
-		{
-			name: "Set() Build Date",
-			arg: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "2099-01-01",
-				buildCommit:  "",
-			},
-			want: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "2099-01-01",
-				buildCommit:  "N/A",
-			},
-		},
-		{
-			name: "Set() Build Commit",
-			arg: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "2099-01-01",
-				buildCommit:  "f005ba11",
-			},
-			want: testValues{
-				buildVersion: "v0.9.9",
-				buildDate:    "2099-01-01",
-				buildCommit:  "f005ba11",
-			},
-		},
+	if BuildDate() != "2023-09-01" {
+		t.Errorf("Expected BuildDate() to return '2023-09-01', but got '%s'", BuildDate())
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Set(tt.arg.buildVersion, tt.arg.buildDate, tt.arg.buildCommit)
-
-			if bi.buildNumber != BuildVersion() ||
-				bi.buildDate != BuildDate() ||
-				bi.buildCommit != BuildCommit() {
-				t.Errorf("Actual args %v, expected %v", bi, tt.want)
-			}
-		})
+	if BuildCommit() != "abcdef" {
+		t.Errorf("Expected BuildCommit() to return 'abcdef', but got '%s'", BuildCommit())
 	}
+}
+
+func TestPrintConsole(t *testing.T) {
+	// Capture the output of PrintConsole
+	output := captureOutput(func() {
+		PrintConsole()
+	})
+
+	// Verify that the printed output matches the expected format
+	expectedOutput := "Build version: 1.0\nBuild date: 2023-09-01\nBuild commit: abcdef\n"
+
+	if output != expectedOutput {
+		t.Errorf("Printed output does not match the expected output.\nExpected:\n%s\nActual:\n%s", expectedOutput, output)
+	}
+}
+
+// captureOutput captures the output of a function and returns it as a string
+func captureOutput(f func()) string {
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+	os.Stdout = oldStdout
+
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
+
+	return buf.String()
 }

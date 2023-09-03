@@ -55,7 +55,7 @@ func BuildCommit() string {
 
 // PrintConsole prints application version details including build information in the terminal
 func PrintConsole() {
-	fmt.Printf("\nBuild version: %s\n", BuildVersion())
+	fmt.Printf("Build version: %s\n", BuildVersion())
 	fmt.Printf("Build date: %s\n", BuildDate())
-	fmt.Printf("Build commit: %s\n\n", BuildCommit())
+	fmt.Printf("Build commit: %s\n", BuildCommit())
 }

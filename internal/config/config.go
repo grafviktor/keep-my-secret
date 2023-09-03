@@ -13,6 +13,8 @@ type EnvConfig struct {
 	HTTPSKeyPath string `env:"TLS_KEY_PATH" envDefault:"./tls/key.pem"`
 	Domain       string `env:"DOMAIN"     envDefault:"localhost"`
 	ClientURL    string `env:"CLIENT_URL"     envDefault:"/"`
+	// DevMode enables CORS
+	DevMode bool `env:"DEV" envDefault:"false"`
 }
 
 type AppConfig struct {
@@ -30,6 +32,7 @@ type AppConfig struct {
 	JWTAudience  string
 	CookieDomain string
 	StorageType  storage.Type
+	DevMode      bool
 }
 
 // New creates new App config instance with pre-defined parameters
@@ -45,5 +48,6 @@ func New(ec EnvConfig) AppConfig {
 		Secret:        ec.Secret,
 		ServerAddr:    ec.ServerAddr,
 		StorageType:   storage.TypeSQL,
+		DevMode:       ec.DevMode,
 	}
 }

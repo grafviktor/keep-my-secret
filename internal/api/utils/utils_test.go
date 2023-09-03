@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"math/rand"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -98,6 +101,58 @@ func TestDecrypt(t *testing.T) {
 			}
 			if !reflect.DeepEqual(string(got), tt.want) {
 				t.Errorf("Decrypt() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGenerateRandomPassword(t *testing.T) {
+	// Seed the random number generator with the current time
+	rand.Seed(time.Now().UnixNano())
+
+	// Generate a random password
+	password := GenerateRandomPassword()
+
+	// Check if the generated password has the correct length
+	expectedLength := aesKeyLength // Assuming aesKeyLength is defined in the same package
+	if len(password) != expectedLength {
+		t.Errorf("Generated password has incorrect length. Expected %d, but got %d", expectedLength, len(password))
+	}
+
+	// Check if the generated password only contains valid validRandomChars
+	for _, char := range password {
+		if !strings.ContainsRune(validRandomChars, char) {
+			t.Errorf("Generated password contains invalid character: %s", string(char))
+		}
+	}
+}
+
+func BenchmarkGenerateRandomPassword(b *testing.B) {
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < b.N; i++ {
+		_ = GenerateRandomPassword()
+	}
+}
+
+func TestNormalizeAESKey(t *testing.T) {
+	// aesKeyLength is defined in utils.go. Redefining, to simplify debugging
+	aesKeyLength = 16
+	// Test cases for key normalization
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{"1234", "1234000000000000"},                     // Shorter key, should be padded with zeros
+		{"abcdefghijklmnop", "abcdefghijklmnop"},         // Correct length key, should remain unchanged
+		{"abcdefghijklmnopqrstuvwx", "abcdefghijklmnop"}, // Longer key, should be truncated
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			normalizedKey := normalizeAESKey(tc.input)
+
+			if normalizedKey != tc.expected {
+				t.Errorf("Expected normalized key: %s, but got: %s", tc.expected, normalizedKey)
 			}
 		})
 	}

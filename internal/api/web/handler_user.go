@@ -87,9 +87,7 @@ func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, use
 func (h *userHTTPHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var cred credentials
 	if err := utils.ReadJSON(w, r, &cred); err != nil {
-		if err != nil {
-			log.Printf("RegisterHandler error: %s\n", err.Error())
-		}
+		log.Printf("RegisterHandler error: %s\n", err.Error())
 
 		_ = utils.WriteJSON(w, http.StatusBadRequest, api.Response{
 			Status:  constant.APIStatusFail,
@@ -101,9 +99,11 @@ func (h *userHTTPHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if !utils.IsUsernameConformsPolicy(cred.Login) || !utils.IsPasswordConformsPolicy(cred.Password) {
+		log.Printf("%s password or username not complex enough", cred.Login)
+
 		_ = utils.WriteJSON(w, http.StatusNotAcceptable, api.Response{
 			Status:  constant.APIStatusFail,
-			Message: constant.APIMessageBadRequest,
+			Message: "password or username should not be empty",
 			Data:    nil,
 		})
 

@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// IsUsernameConformsPolicy - checks if username conforms with security policy
+// Normally we should have generic settings for username and password complexity. But I'm reluctant
+// to complicate this logic for a pet project
 func IsUsernameConformsPolicy(username string) bool {
 	return len(username) > 0
 }
@@ -17,16 +20,17 @@ func IsPasswordConformsPolicy(password string) bool {
 	return len(password) > 0
 }
 
-var keyLength = 24
+var (
+	aesKeyLength     = 24
+	validRandomChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?~"
+)
 
 func GenerateRandomPassword() string {
-	characters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?~"
-
 	mathrand.Seed(time.Now().UnixNano())
 
-	key := make([]byte, keyLength)
+	key := make([]byte, aesKeyLength)
 	for i := range key {
-		key[i] = characters[mathrand.Intn(len(characters))]
+		key[i] = validRandomChars[mathrand.Intn(len(validRandomChars))]
 	}
 
 	return string(key)
@@ -35,12 +39,12 @@ func GenerateRandomPassword() string {
 func normalizeAESKey(key string) string {
 	length := len(key)
 
-	if length < keyLength {
-		for i := 0; i < keyLength-length; i++ {
+	if length < aesKeyLength {
+		for i := 0; i < aesKeyLength-length; i++ {
 			key += "0"
 		}
-	} else if length > keyLength {
-		key = key[:keyLength]
+	} else if length > aesKeyLength {
+		key = key[:aesKeyLength]
 	}
 
 	return key

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -26,8 +27,6 @@ var (
 )
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
 	// Display application version and build details
 	version.Set(buildVersion, buildDate, buildCommit)
 	version.PrintConsole()
@@ -35,6 +34,15 @@ func main() {
 	ec := config.EnvConfig{}
 	if err := env.Parse(&ec); err != nil {
 		log.Printf("%+v\n", err)
+	}
+
+	if ec.DevMode { // To enable dev mode, use 'DEV=true' env variable
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		fmt.Println("=============================")
+		fmt.Println("Running in Dev Mode !!!")
+		fmt.Println("CORS is enabled for client connections")
+		fmt.Println("Detailed logging is enabled")
+		fmt.Println("=============================")
 	}
 
 	appConfig := config.New(ec)
