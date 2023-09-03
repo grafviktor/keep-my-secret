@@ -235,7 +235,7 @@ func (h *userHTTPHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Req
 			}
 
 			_, err = h.storage.GetUser(r.Context(), claims.Subject)
-			if err != nil && !errors.Is(err, constant.ErrNotFound) {
+			if err != nil {
 				log.Println("RefreshTokenHandler error: unknown credentials")
 
 				_ = utils.WriteJSON(w, http.StatusUnauthorized, api.Response{
@@ -248,8 +248,8 @@ func (h *userHTTPHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Req
 			}
 
 			jwtUser := auth.JWTUser{ID: claims.Subject}
-			a := auth.New(h.config)
-			tokens, err := a.GenerateTokenPair(&jwtUser)
+			// a := auth.New(h.config)
+			tokens, err := h.authUtils.GenerateTokenPair(&jwtUser)
 			if err != nil {
 				log.Println("RefreshTokenHandler error: cannot create tokens")
 
@@ -262,7 +262,7 @@ func (h *userHTTPHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Req
 				return
 			}
 
-			refreshCookie := a.GetRefreshCookie(tokens.RefreshToken)
+			refreshCookie := h.authUtils.GetRefreshCookie(tokens.RefreshToken)
 			http.SetCookie(w, refreshCookie)
 
 			_ = utils.WriteJSON(w, http.StatusOK, api.Response{

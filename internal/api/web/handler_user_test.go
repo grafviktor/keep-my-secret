@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -331,11 +332,17 @@ type MockAuthUtils struct {
 	getRefreshCookieCalled  bool
 	getRefreshCookieToken   string
 	getRefreshCookieReturn  *http.Cookie
+	shouldTriggerError      bool
 }
 
 func (au *MockAuthUtils) GenerateTokenPair(user *auth.JWTUser) (auth.TokenPair, error) {
+	if au.shouldTriggerError {
+		return au.generateTokenPairReturn, errors.New("that is a mock error triggered by 'error' subject in token")
+	}
+
 	au.generateTokenPairCalled = true
 	au.generateTokenPairUser = user
+
 	return au.generateTokenPairReturn, nil
 }
 
@@ -386,5 +393,106 @@ func TestHandleSuccessFullUserSignIn(t *testing.T) {
 	// Assert response status code
 	if w.Code != http.StatusCreated {
 		t.Errorf("Expected status code %d, but got %d", http.StatusCreated, w.Code)
+	}
+}
+
+// Create a mockTokenGenerator that implements the GenerateTokenPair method
+// type mockTokenGenerator struct{}
+//
+// func (a *mockTokenGenerator) GenerateTokenPair(user *auth.JWTUser) (*auth.TokenPair, error) {
+// 	// Implement your mock logic here
+// 	// For example, you can return a mock token pair or an error based on test cases
+// 	if user.ID == "validUserID" {
+// 		return &auth.TokenPair{
+// 			AccessToken:  "mockAccessToken",
+// 			RefreshToken: "mockRefreshToken",
+// 		}, nil
+// 	}
+// 	return nil, errors.New("mockTokenGenerator: error")
+// }
+
+func TestRefreshTokenHandler(t *testing.T) {
+	validTokenSubject := "1234567890" // that's taken from token (decrypt the token on jwt.io, and you'll see this subject)
+	//nolint:lll
+	validToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+	testCases := []struct {
+		name           string
+		secret         string
+		token          string
+		responseStatus int
+		tokenSubject   string
+		authUtilsError bool
+	}{
+		{
+			name:           "Valid token",
+			secret:         "your-256-bit-secret", // Copied from jwt.io
+			token:          validToken,
+			responseStatus: http.StatusOK,
+			tokenSubject:   validTokenSubject,
+		}, {
+			name:   "Invalid token",
+			secret: "your-256-bit-secret",
+			//nolint:lll
+			token:          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+			responseStatus: http.StatusUnauthorized,
+			tokenSubject:   validTokenSubject,
+		}, {
+			name:           "Username not found in storage",
+			secret:         "your-256-bit-secret",
+			token:          validToken,
+			responseStatus: http.StatusUnauthorized,
+			tokenSubject:   "the_username_id_different_from_what_token_claims",
+		}, {
+			name:           "AuthUtils triggered error",
+			secret:         "your-256-bit-secret",
+			token:          validToken,
+			responseStatus: http.StatusInternalServerError,
+			tokenSubject:   validTokenSubject,
+			authUtilsError: true, // will trigger error in auth utils
+		},
+	}
+
+	for _, testCase := range testCases {
+		// Create a sample AppConfig for testing
+		appConfig := config.AppConfig{
+			// Initialize your AppConfig fields here
+			Secret: testCase.secret,
+		}
+
+		// Create a sample HTTP request with a cookie
+		req, err := http.NewRequest("GET", "/refresh", nil)
+		if err != nil {
+			t.Fatalf("Failed to create request: %v", err)
+		}
+
+		req.AddCookie(&http.Cookie{Name: auth.CookieName, Value: testCase.token})
+
+		// Create a mock response recorder
+		rr := httptest.NewRecorder()
+
+		// Create an instance of your userHTTPHandler with the mock dependencies
+		handler := &userHTTPHandler{
+			config: appConfig,
+			storage: &MockStorage{
+				users: make(map[string]*model.User),
+			},
+			authUtils: &MockAuthUtils{
+				shouldTriggerError: testCase.authUtilsError,
+			},
+		}
+
+		//nolint:errcheck
+		handler.storage.AddUser(req.Context(), &model.User{
+			Login: testCase.tokenSubject,
+		})
+
+		// Call the RefreshTokenHandler
+		handler.RefreshTokenHandler(rr, req)
+
+		// Check the response status code
+		if rr.Code != testCase.responseStatus {
+			t.Errorf("%s: Expected status code %d, got %d", testCase.name, testCase.responseStatus, rr.Code)
+		}
 	}
 }
