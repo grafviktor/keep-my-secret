@@ -496,3 +496,52 @@ func TestRefreshTokenHandler(t *testing.T) {
 		}
 	}
 }
+
+func TestLogoutHandler(t *testing.T) {
+	// Create a sample AppConfig for testing
+	appConfig := config.AppConfig{
+		// Initialize your AppConfig fields here
+		Secret: "your_secret_key",
+	}
+
+	// Create a sample HTTP request
+	req, err := http.NewRequest("GET", "/logout", nil)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	// Create a mock response recorder
+	rr := httptest.NewRecorder()
+
+	// Create an instance of your userHTTPHandler with the mock dependency
+	handler := &userHTTPHandler{
+		config: appConfig,
+	}
+
+	// Call the LogoutHandler
+	handler.LogoutHandler(rr, req)
+
+	// Check the response status code
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Check the cookie in the response
+	cookies := rr.Result().Cookies()
+	if len(cookies) != 1 {
+		t.Error("Expected one cookie in the response")
+	} else {
+		// Check if the cookie is expired
+		if cookies[0].MaxAge != -1 {
+			t.Error("Expected the cookie to be expired")
+		}
+		// Check if the cookie name matches
+		if cookies[0].Name != auth.CookieName {
+			t.Errorf("Expected cookie name to be %s, got %s", auth.CookieName, cookies[0].Name)
+		}
+		// Check if the cookie value matches
+		// if cookies[0].Value != "expiredRefreshToken" {
+		// 	t.Errorf("Expected cookie value to be 'expiredRefreshToken', got '%s'", cookies[0].Value)
+		// }
+	}
+}
