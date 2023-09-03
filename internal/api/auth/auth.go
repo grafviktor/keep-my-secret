@@ -131,7 +131,10 @@ func (auth Auth) GetExpiredRefreshCookie() *http.Cookie {
 	}
 }
 
-func VerifyAuthHeader(config config.AppConfig, w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
+type JWTVerifier struct{}
+
+//nolint:lll
+func (t JWTVerifier) VerifyAuthHeader(config config.AppConfig, w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
 	w.Header().Add("Vary", "Authorization")
 
 	authHeader := r.Header.Get("Authorization")

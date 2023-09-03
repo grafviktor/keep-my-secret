@@ -130,7 +130,8 @@ func TestVerifyAuthHeader(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	// Call the VerifyAuthHeader function
-	token, claims, err := VerifyAuthHeader(ac, rr, req)
+	verifier := JWTVerifier{}
+	token, claims, err := verifier.VerifyAuthHeader(ac, rr, req)
 	// Check for expected results
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -166,7 +167,7 @@ func TestVerifyAuthHeader(t *testing.T) {
 	for _, tc := range testCases {
 		req.Header.Set("Authorization", tc.headerValue)
 		rr = httptest.NewRecorder()
-		_, _, err := VerifyAuthHeader(ac, rr, req)
+		_, _, err := verifier.VerifyAuthHeader(ac, rr, req)
 		if err == nil || err.Error() != tc.expectedErr {
 			t.Errorf("Expected error: '%s', got: '%v'", tc.expectedErr, err)
 		}

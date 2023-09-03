@@ -1,97 +1,70 @@
 package middleware
 
-/*
 import (
-	"context"
-	"github.com/grafviktor/keep-my-secret/internal/api"
-	"github.com/grafviktor/keep-my-secret/internal/api/auth"
-	"github.com/grafviktor/keep-my-secret/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/grafviktor/keep-my-secret/internal/api"
+	"github.com/grafviktor/keep-my-secret/internal/api/auth"
+	"github.com/grafviktor/keep-my-secret/internal/config"
 )
 
-type mockAuth struct {
-}
+type mockAuthVerifier struct{}
 
-func (m mockAuth) AuthRequired(fn http.HandlerFunc) {
-	// Mock authentication logic here (return a valid Claims struct for success)
-	fn()
-}
+//nolint:lll
+func (m mockAuthVerifier) VerifyAuthHeader(config config.AppConfig, w http.ResponseWriter, r *http.Request) (string, *auth.Claims, error) {
+	claims := &auth.Claims{}
+	//nolint:goconst
+	claims.Subject = "testuser"
 
-// Mock implementation of the auth.VerifyAuthHeader function
-func (m mockAuth) mockVerifyAuthHeader(_ config.AppConfig, w http.ResponseWriter, r *http.Request)
-(*auth.Claims, error) {
-	// Mock authentication logic here (return a valid Claims struct for success)
-	claims := auth.Claims{}
-	claims.Subject = "tony.tester@locahost"
-	return &claims, nil
-}
-
-type mockMiddleware struct {
-	config   config.AppConfig
-	mockAuth mockAuth
-	middleware
+	return "", claims, nil
 }
 
 func TestAuthRequired(t *testing.T) {
-	// Create a mock HTTP handler for testing
-	mockHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userLogin := r.Context().Value(api.ContextUserLogin).(string)
-		w.Write([]byte("Authenticated user: " + userLogin))
-	})
-
-	// Create a mock HTTP request
-	req := httptest.NewRequest("GET", "http://example.com/some/protected/resource", nil)
-	req = req.WithContext(context.WithValue(req.Context(), api.ContextUserLogin, "tony.tester@locahost"))
-
-	// Create a response recorder
-	res := httptest.NewRecorder()
-
-	// Create an instance of the middleware with mockVerifyAuthHeader
-	middlewareInstance := mockMiddleware{
-		config:   config.AppConfig{},
-		mockAuth: mockAuth{},
-	}
-	// middlewareInstance.auth.VerifyAuthHeader = mockVerifyAuthHeader
-
-	// Call the AuthRequired middleware with the mock handler
-	authRequiredHandler := middlewareInstance.mockAuth.AuthRequired(mockHandler)
-
-	// Process the request using the AuthRequired middleware
-	authRequiredHandler.ServeHTTP(res, req)
-
-	// Verify that the expected user login is set in the request context
-	expectedUserLogin := "tony.tester@locahost"
-	userLogin := req.Context().Value(api.ContextUserLogin).(string)
-	if userLogin != expectedUserLogin {
-		t.Errorf("Expected user login to be '%s', but got '%s'", expectedUserLogin, userLogin)
+	// Create a sample AppConfig
+	appConfig := config.AppConfig{
+		// Initialize your AppConfig fields here
 	}
 
-	// Verify the response from the mock handler
-	expectedResponse := "Authenticated user: user123"
-	if res.Body.String() != expectedResponse {
-		t.Errorf("Expected response body to be '%s', but got '%s'", expectedResponse, res.Body.String())
+	// Create an instance of your middleware with the mock dependency
+	mw := middleware{
+		config:       appConfig,
+		authVerifier: mockAuthVerifier{},
 	}
 
-	// Reset the recorder for the next test
-	res = httptest.NewRecorder()
+	// Create a sample HTTP request
+	req, err := http.NewRequest("GET", "/test", nil)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
 
-	// Mock authentication failure by returning an error from mockVerifyAuthHeader
-	// middlewareInstance.auth.VerifyAuthHeader = func(config config.AppConfig, w http.ResponseWriter, r *http.Request)
-(*auth.Claims, error) {
-	// 	return nil, errors.New(constant.APIMessageUnauthorized)
-	// }
+	// Create a mock response recorder
+	rr := httptest.NewRecorder()
 
-	// Call the AuthRequired middleware with the mock handler
-	authRequiredHandler = middlewareInstance.AuthRequired(mockHandler)
+	// Call the AuthRequired middleware
+	handler := mw.AuthRequired(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve the user login from the context
+		userLogin, ok := r.Context().Value(api.ContextUserLogin).(string)
+		if !ok {
+			t.Fatal("User login not found in context")
+		}
 
-	// Process the request using the AuthRequired middleware
-	authRequiredHandler.ServeHTTP(res, req)
+		// Check if the user login matches the expected value
+		//noling:goconst
+		expectedUserLogin := "testuser" // Replace with the expected user login
+		if userLogin != expectedUserLogin {
+			t.Errorf("Expected user login '%s', got '%s'", expectedUserLogin, userLogin)
+		}
 
-	// Verify that the response indicates unauthorized access
-	if res.Code != http.StatusUnauthorized {
-		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusUnauthorized, res.Code)
+		// Serve the response
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	handler.ServeHTTP(rr, req)
+
+	// Check the response status code
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
 	}
 }
-*/

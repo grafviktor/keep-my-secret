@@ -12,7 +12,9 @@ type mockHandler struct {
 	called bool
 }
 
-func (m *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {}
+func (m *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	m.called = true
+}
 
 func TestEnableCORS(t *testing.T) {
 	// Create a mock HTTP handler for testing
@@ -70,5 +72,9 @@ func TestEnableCORS(t *testing.T) {
 		if actualValue != "" {
 			t.Errorf("Expected %s header to be empty, but got '%s'", header, actualValue)
 		}
+	}
+
+	if !mock.called {
+		t.Error("Expected ServeHTTP be called")
 	}
 }

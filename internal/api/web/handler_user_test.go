@@ -23,8 +23,6 @@ var appConfig = config.AppConfig{
 	StorageType: storage.TypeSQL,
 }
 
-var testContext = context.Background()
-
 var _ storage.Storage = MockStorage{}
 
 type MockStorage struct {
@@ -87,18 +85,18 @@ func TestUserHTTPHandler_Register(t *testing.T) {
 		contentType string
 		headerKey   string
 		headerValue string
-		response    string
+		// response    string
 	}
 
 	type httpResponseTestCase struct {
-		name        string
-		httpPath    string
+		name string
+		// httpPath    string
 		httpBody    string
 		httpMethod  string
 		httpHandler http.HandlerFunc
 		expected    expected
-		headerKey   string
-		headerValue string
+		// headerKey   string
+		// headerValue string
 	}
 
 	storage := &MockStorage{
@@ -193,18 +191,18 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 		contentType string
 		headerKey   string
 		headerValue string
-		response    string
+		// response    string
 	}
 
 	type httpResponseTestCase struct {
-		name        string
-		httpPath    string
+		name string
+		// httpPath    string
 		httpBody    string
 		httpMethod  string
 		httpHandler http.HandlerFunc
 		expected    expected
-		headerKey   string
-		headerValue string
+		// headerKey   string
+		// headerValue string
 	}
 
 	ls := MockStorage{

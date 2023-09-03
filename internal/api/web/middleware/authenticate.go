@@ -8,13 +8,11 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/api"
 	"github.com/grafviktor/keep-my-secret/internal/api/utils"
 	"github.com/grafviktor/keep-my-secret/internal/constant"
-
-	"github.com/grafviktor/keep-my-secret/internal/api/auth"
 )
 
 func (m middleware) AuthRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, claims, err := auth.VerifyAuthHeader(m.config, w, r)
+		_, claims, err := m.authVerifier.VerifyAuthHeader(m.config, w, r)
 		if err != nil {
 			log.Printf("auth: %v", err.Error())
 

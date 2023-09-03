@@ -40,7 +40,7 @@ run:
 	@echo 'Attempting to start the app'
 	go run $(LD_FLAGS) ./cmd/kms/*.go
 
-## run: start application
+## lint: run linter
 .PHONY: lint
 lint:
 	@echo 'Running linter'
