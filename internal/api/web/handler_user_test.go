@@ -354,7 +354,7 @@ func TestHandleSuccessFullUserSignIn(t *testing.T) {
 		authUtils: &MockAuthUtils{},
 	}
 
-	// httptest.NewRequest("POST", "/signin", nil)
+	httptest.NewRequest("POST", "/signin", nil)
 	w := httptest.NewRecorder()
 
 	cred := credentials{
