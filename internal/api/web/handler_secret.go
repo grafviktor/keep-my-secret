@@ -103,7 +103,7 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = secret.Encrypt(key, login+a.config.Secret)
+	err = secret.Encrypt(key, login)
 	if err != nil {
 		log.Printf("SaveSecretHandler error: %s\n", err.Error())
 
@@ -165,7 +165,7 @@ func (a *apiRouteProvider) ListSecretsHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	for _, secret := range secrets {
-		err = secret.Decrypt(key, login+a.config.Secret)
+		err = secret.Decrypt(key, login)
 		if err != nil {
 			log.Printf("ListSecretsHandler error: %s\n", err.Error())
 
@@ -235,7 +235,7 @@ func (a *apiRouteProvider) DownloadSecretFileHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	err = secret.Decrypt(key, login+a.config.Secret)
+	err = secret.Decrypt(key, login)
 	if err != nil {
 		log.Printf("DownloadSecretFileHandler error: %s\n", err.Error())
 

@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/grafviktor/keep-my-secret/internal/api/auth"
 
-	"github.com/grafviktor/keep-my-secret/internal/constant"
 	"github.com/grafviktor/keep-my-secret/internal/model"
 
 	"github.com/stretchr/testify/assert"
@@ -22,61 +20,6 @@ import (
 
 var appConfig = config.AppConfig{
 	StorageType: storage.TypeSQL,
-}
-
-var _ storage.Storage = MockStorage{}
-
-type MockStorage struct {
-	users map[string]*model.User
-}
-
-//nolint:lll
-func (mockStorage MockStorage) SaveSecret(ctx context.Context, secret *model.Secret, login string) (*model.Secret, error) {
-	return nil, nil
-}
-
-func (mockStorage MockStorage) GetSecretsByUser(ctx context.Context, login string) (map[int]*model.Secret, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (mockStorage MockStorage) DeleteSecret(ctx context.Context, secretID, login string) error {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (mockStorage MockStorage) GetSecret(ctx context.Context, secretID, login string) (*model.Secret, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (mockStorage MockStorage) Close() error {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (mockStorage MockStorage) AddUser(ctx context.Context, user *model.User) (*model.User, error) {
-	if strings.Trim(user.Login, " ") == "" {
-		return nil, constant.ErrBadArgument
-	}
-
-	_, ok := mockStorage.users[user.Login]
-	if ok {
-		return nil, constant.ErrDuplicateRecord
-	}
-
-	mockStorage.users[user.Login] = user
-
-	return user, nil
-}
-
-func (mockStorage MockStorage) GetUser(ctx context.Context, login string) (*model.User, error) {
-	user, ok := mockStorage.users[login]
-	if ok {
-		return user, nil
-	}
-
-	return nil, constant.ErrNotFound
 }
 
 func TestUserHTTPHandler_Register(t *testing.T) {

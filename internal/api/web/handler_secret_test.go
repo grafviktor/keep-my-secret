@@ -108,3 +108,51 @@ func TestSaveSecretHandler(t *testing.T) {
 		t.Errorf("Expected API status 'success', got '%s'", response.Status)
 	}
 }
+
+func TestListSecretsHandler(t *testing.T) {
+	// Create a sample AppConfig for testing
+	appConfig := config.AppConfig{
+		// Initialize your AppConfig fields here
+		Secret: "your_secret_key",
+	}
+
+	// Create a sample HTTP request
+	req, err := http.NewRequest("GET", "/your-api-endpoint", nil)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	// Create a mock response recorder
+	rr := httptest.NewRecorder()
+
+	// Create an instance of your apiRouteProvider with mock dependencies
+	handler := &apiRouteProvider{
+		config: appConfig,
+		storage: &MockStorage{
+			users: make(map[string]*model.User),
+		},
+		keyCache: &MockKeyCache{},
+	}
+
+	// Create a context with a mock user login value
+	ctx := context.WithValue(context.Background(), api.ContextUserLogin, "validLogin")
+
+	// Call the ListSecretsHandler with the mocked context
+	handler.ListSecretsHandler(rr, req.WithContext(ctx))
+
+	// Check the response status code
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Parse and check the response body
+	var response api.Response
+	err = json.Unmarshal(rr.Body.Bytes(), &response)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	if response.Status != constant.APIStatusSuccess {
+		t.Errorf("Expected API status 'success', got '%s'", response.Status)
+	}
+}

@@ -45,6 +45,7 @@ type userModel interface {
 }
 
 func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, user userModel, cred credentials) {
+	// secret, err := user.GetDataKey(cred.Password+h.config.Secret)
 	secret, err := user.GetDataKey(cred.Password)
 	if err != nil {
 		log.Printf("RegisterHandler error: %s\n", err.Error())

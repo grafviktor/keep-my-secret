@@ -11,21 +11,31 @@ import (
 )
 
 // var shouldNotEncrypt = []string{"ID", "Type", "Title"}
-var shouldNotEncrypt = []string{"ID"}
+var shouldNotEncrypt = []string{"ID", "Encryptor"}
+
+type Encryptor interface {
+	Encrypt(plaindata []byte, key string) ([]byte, error)
+	Decrypt(cipherdata []byte, key string) ([]byte, error)
+}
 
 type Secret struct {
-	ID             int64  `json:"id"`
-	Type           string `json:"type"`
-	Title          string `json:"title"`
-	Login          string `json:"login"`
-	Password       string `json:"password"`
-	Note           string `json:"note"`
-	File           []byte `json:"-"`
-	FileName       string `json:"file_name"`
-	CardholderName string `json:"cardholder_name"`
-	CardNumber     string `json:"card_number"`
-	Expiration     string `json:"expiration"`
-	SecurityCode   string `json:"security_code"`
+	ID             int64     `json:"id"`
+	Type           string    `json:"type"`
+	Title          string    `json:"title"`
+	Login          string    `json:"login"`
+	Password       string    `json:"password"`
+	Note           string    `json:"note"`
+	File           []byte    `json:"-"`
+	FileName       string    `json:"file_name"`
+	CardholderName string    `json:"cardholder_name"`
+	CardNumber     string    `json:"card_number"`
+	Expiration     string    `json:"expiration"`
+	SecurityCode   string    `json:"security_code"`
+	Encryptor      Encryptor `json:"-"`
+}
+
+func (s *Secret) SetEncryptor(encryptor Encryptor) {
+	s.Encryptor = encryptor
 }
 
 const (
@@ -63,7 +73,15 @@ func (s *Secret) Encrypt(key, salt string) error {
 			continue
 		}
 
-		encrypted, err := utils.Encrypt(toEncrypt, key)
+		var encrypted []byte
+		var err error
+
+		if s.Encryptor == nil {
+			encrypted, err = utils.Encrypt(toEncrypt, key)
+		} else {
+			encrypted, err = s.Encryptor.Encrypt(toEncrypt, key)
+		}
+
 		if err != nil {
 			return fmt.Errorf("secret.Encrypt: %s", err.Error())
 		}
@@ -108,17 +126,33 @@ func (s *Secret) Decrypt(key, salt string) error {
 			continue
 		}
 
-		decrypted, err := utils.Decrypt(toDecrypt, key)
+		var decrypted []byte
+		var err error
+
+		if s.Encryptor == nil {
+			decrypted, err = utils.Decrypt(toDecrypt, key)
+		} else {
+			decrypted, err = s.Encryptor.Encrypt(toDecrypt, key)
+		}
+
 		if err != nil {
 			return fmt.Errorf("secret encrypt: %s", err.Error())
 		}
 
 		if fieldType == typeString {
-			decryptedStr := string(decrypted[len(salt):])
+			decryptedStr := ""
+			if len(decrypted) > len(salt) {
+				decryptedStr = string(decrypted[len(salt):])
+			}
 
 			v.Field(i).SetString(decryptedStr)
 		} else {
-			v.Field(i).SetBytes(decrypted[len(salt):])
+			decryptedBytes := []byte{}
+			if len(decrypted) > len(salt) {
+				decryptedBytes = decrypted[len(salt):]
+			}
+
+			v.Field(i).SetBytes(decryptedBytes)
 		}
 	}
 
