@@ -3,7 +3,11 @@ package web
 import (
 	"context"
 	"errors"
+	"log"
+	"net/http"
 	"strings"
+
+	"github.com/grafviktor/keep-my-secret/internal/api/auth"
 
 	"github.com/grafviktor/keep-my-secret/internal/constant"
 	"github.com/grafviktor/keep-my-secret/internal/model"
@@ -31,6 +35,7 @@ func (ms mockEncryptor) Encrypt(plaindata []byte, key string) ([]byte, error) {
 }
 
 func (ms mockEncryptor) Decrypt(cipherdata []byte, key string) ([]byte, error) {
+	log.Println("called")
 	return cipherdata, nil
 }
 
@@ -76,13 +81,40 @@ func (mockStorage MockStorage) GetSecretsByUser(ctx context.Context, login strin
 }
 
 func (mockStorage MockStorage) DeleteSecret(ctx context.Context, secretID, login string) error {
-	// TODO implement me
-	panic("implement me")
+	if secretID == "invalid_id" {
+		return constant.ErrNotFound
+	}
+
+	return nil
 }
 
 func (mockStorage MockStorage) GetSecret(ctx context.Context, secretID, login string) (*model.Secret, error) {
-	// TODO implement me
-	panic("implement me")
+	// Simulate fetching a secret based on the test scenario.
+	//nolint:gocritic
+	if secretID == "valid_id" {
+		secret := &model.Secret{
+			ID:             0,
+			Type:           "file",
+			Title:          "Test",
+			Login:          "tony@tester",
+			Password:       "",
+			Note:           "",
+			File:           []byte("This is a test file."),
+			FileName:       "test.txt",
+			CardholderName: "",
+			CardNumber:     "",
+			Expiration:     "",
+			SecurityCode:   "",
+			Encryptor:      nil,
+		}
+
+		secret.SetEncryptor(mockEncryptor{})
+		return secret, nil
+	} else if secretID == "not_found_id" {
+		return nil, constant.ErrNotFound
+	} else {
+		return nil, errors.New("mock storage error")
+	}
 }
 
 func (mockStorage MockStorage) Close() error {
@@ -112,4 +144,62 @@ func (mockStorage MockStorage) GetUser(ctx context.Context, login string) (*mode
 	}
 
 	return nil, constant.ErrNotFound
+}
+
+type MockUser struct{}
+
+func (u *MockUser) GetDataKey(password string) (string, error) {
+	return "mocked-secret", nil
+}
+
+type MockKeyCache struct {
+	setCalled      bool
+	setLogin       string
+	setSecret      string
+	getCalled      bool
+	getLogin       string
+	getReturnValue string
+}
+
+func (kc *MockKeyCache) Set(login, secret string) {
+	kc.setCalled = true
+	kc.setLogin = login
+	kc.setSecret = secret
+}
+
+func (kc *MockKeyCache) Get(login string) (string, error) {
+	if login == "invalid_user" {
+		return "", errors.New("mock key cache error")
+	}
+
+	kc.getCalled = true
+	kc.getLogin = login
+	return kc.getReturnValue, nil
+}
+
+type MockAuthUtils struct {
+	generateTokenPairCalled bool
+	generateTokenPairUser   *auth.JWTUser
+	generateTokenPairReturn auth.TokenPair
+	getRefreshCookieCalled  bool
+	getRefreshCookieToken   string
+	getRefreshCookieReturn  *http.Cookie
+	shouldTriggerError      bool
+}
+
+func (au *MockAuthUtils) GenerateTokenPair(user *auth.JWTUser) (auth.TokenPair, error) {
+	if au.shouldTriggerError {
+		return au.generateTokenPairReturn, errors.New("that is a mock error triggered by 'error' subject in token")
+	}
+
+	au.generateTokenPairCalled = true
+	au.generateTokenPairUser = user
+
+	return au.generateTokenPairReturn, nil
+}
+
+func (au *MockAuthUtils) GetRefreshCookie(token string) *http.Cookie {
+	au.getRefreshCookieCalled = true
+	au.getRefreshCookieToken = token
+	return au.getRefreshCookieReturn
 }

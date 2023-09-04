@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -239,61 +238,6 @@ func TestUserHTTPHandler_Login(t *testing.T) {
 	}
 }
 
-type MockUser struct{}
-
-func (u *MockUser) GetDataKey(password string) (string, error) {
-	//nolint:goconst
-	return "mocked-secret", nil
-}
-
-type MockKeyCache struct {
-	setCalled      bool
-	setLogin       string
-	setSecret      string
-	getCalled      bool
-	getLogin       string
-	getReturnValue string
-}
-
-func (kc *MockKeyCache) Set(login, secret string) {
-	kc.setCalled = true
-	kc.setLogin = login
-	kc.setSecret = secret
-}
-
-func (kc *MockKeyCache) Get(login string) (string, error) {
-	kc.getCalled = true
-	kc.getLogin = login
-	return kc.getReturnValue, nil
-}
-
-type MockAuthUtils struct {
-	generateTokenPairCalled bool
-	generateTokenPairUser   *auth.JWTUser
-	generateTokenPairReturn auth.TokenPair
-	getRefreshCookieCalled  bool
-	getRefreshCookieToken   string
-	getRefreshCookieReturn  *http.Cookie
-	shouldTriggerError      bool
-}
-
-func (au *MockAuthUtils) GenerateTokenPair(user *auth.JWTUser) (auth.TokenPair, error) {
-	if au.shouldTriggerError {
-		return au.generateTokenPairReturn, errors.New("that is a mock error triggered by 'error' subject in token")
-	}
-
-	au.generateTokenPairCalled = true
-	au.generateTokenPairUser = user
-
-	return au.generateTokenPairReturn, nil
-}
-
-func (au *MockAuthUtils) GetRefreshCookie(token string) *http.Cookie {
-	au.getRefreshCookieCalled = true
-	au.getRefreshCookieToken = token
-	return au.getRefreshCookieReturn
-}
-
 func TestHandleSuccessFullUserSignIn(t *testing.T) {
 	handler := &userHTTPHandler{
 		config:    config.AppConfig{},
@@ -319,6 +263,7 @@ func TestHandleSuccessFullUserSignIn(t *testing.T) {
 	if handler.keyCache.(*MockKeyCache).setLogin != "testuser" {
 		t.Errorf("Expected Set to be called with login 'testuser', but got '%s'", handler.keyCache.(*MockKeyCache).setLogin)
 	}
+	//nolint:goconst
 	if handler.keyCache.(*MockKeyCache).setSecret != "mocked-secret" {
 		//nolint:lll
 		t.Errorf("Expected Set to be called with secret 'mocked-secret', but got '%s'", handler.keyCache.(*MockKeyCache).setSecret)

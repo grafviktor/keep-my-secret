@@ -10,7 +10,7 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/constant"
 )
 
-func (m middleware) AuthRequired(next http.Handler) http.Handler {
+func (m *middleware) AuthRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, claims, err := m.authVerifier.VerifyAuthHeader(m.config, w, r)
 		if err != nil {

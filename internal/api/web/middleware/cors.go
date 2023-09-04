@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (m middleware) EnableCORS(next http.Handler) http.Handler {
+func (m *middleware) EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if m.config.DevMode {
 			// That was set for my dev environment, where rest client was running in webpack-dev server

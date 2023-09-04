@@ -132,7 +132,7 @@ func (s *Secret) Decrypt(key, salt string) error {
 		if s.Encryptor == nil {
 			decrypted, err = utils.Decrypt(toDecrypt, key)
 		} else {
-			decrypted, err = s.Encryptor.Encrypt(toDecrypt, key)
+			decrypted, err = s.Encryptor.Decrypt(toDecrypt, key)
 		}
 
 		if err != nil {

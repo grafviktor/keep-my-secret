@@ -11,6 +11,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/grafviktor/keep-my-secret/internal/api"
 	"github.com/grafviktor/keep-my-secret/internal/config"
 	"github.com/grafviktor/keep-my-secret/internal/constant"
@@ -156,3 +159,126 @@ func TestListSecretsHandler(t *testing.T) {
 		t.Errorf("Expected API status 'success', got '%s'", response.Status)
 	}
 }
+
+func TestDeleteSecretHandler(t *testing.T) {
+	// Create a new chi router for testing.
+	r := chi.NewRouter()
+
+	// Create a new mock storage instance.
+	mock := &MockStorage{}
+
+	// Create an instance of the API route provider with the mock storage.
+	apiProvider := &apiRouteProvider{storage: mock}
+
+	// Register the DeleteSecretHandler route on the router.
+	r.Delete("/secrets/{id}", apiProvider.DeleteSecretHandler)
+
+	// Create a test request with a valid ID.
+	req := httptest.NewRequest("DELETE", "/secrets/valid_id", nil)
+	ctx := context.WithValue(req.Context(), api.ContextUserLogin, "test_user")
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code.
+	assert.Equal(t, http.StatusAccepted, w.Code)
+
+	// Check the response body.
+	expectedResponse := `{"status":"success","message":"","data":"valid_id"}`
+	assert.Equal(t, expectedResponse, w.Body.String())
+
+	// Create a test request with an invalid ID.
+	req = httptest.NewRequest("DELETE", "/secrets/invalid_id", nil)
+	ctx = context.WithValue(req.Context(), api.ContextUserLogin, "test_user")
+	req = req.WithContext(ctx)
+	w = httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code.
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// Check the response body.
+	expectedResponse = `{"status":"fail","message":"not found","data":null}`
+	assert.Equal(t, expectedResponse, w.Body.String())
+}
+
+/*
+func TestDownloadSecretFileHandler(t *testing.T) {
+	// Create a new chi router for testing.
+	r := chi.NewRouter()
+
+	// Create a new mock storage instance and a mock key cache instance.
+	mockStorage := &MockStorage{}
+	mockKeyCache := &MockKeyCache{}
+
+	// Create an instance of the API route provider with the mock dependencies.
+	apiProvider := &apiRouteProvider{
+		storage:  mockStorage,
+		keyCache: mockKeyCache,
+	}
+
+	// Register the DownloadSecretFileHandler route on the router.
+	r.Get("/secrets/{id}/download", apiProvider.DownloadSecretFileHandler)
+
+	// Create a test request with a valid ID and valid user.
+	req := httptest.NewRequest("GET", "/secrets/valid_id/download", nil)
+	ctx := context.WithValue(req.Context(), api.ContextUserLogin, "valid_user")
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code.
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Check the response headers.
+	assert.Equal(t, "attachment; filename=test.txt", w.Header().Get("Content-Disposition"))
+	assert.Equal(t, "application/octet-stream", w.Header().Get("Content-Type"))
+	assert.Equal(t, "20", w.Header().Get("Content-Length"))
+
+	// Check the response body.
+	expectedResponse := "This is a test file."
+	assert.Equal(t, expectedResponse, w.Body.String())
+
+	// Create a test request with an invalid ID and valid user.
+	req = httptest.NewRequest("GET", "/secrets/not_found_id/download", nil)
+	ctx = context.WithValue(req.Context(), api.ContextUserLogin, "valid_user")
+	req = req.WithContext(ctx)
+	w = httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code for not found.
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// Create a test request with a valid ID and invalid user.
+	req = httptest.NewRequest("GET", "/secrets/valid_id/download", nil)
+	ctx = context.WithValue(req.Context(), api.ContextUserLogin, "invalid_user")
+	req = req.WithContext(ctx)
+	w = httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code for unauthorized.
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	// Create a test request with an error scenario (mock storage error).
+	req = httptest.NewRequest("GET", "/secrets/error_id/download", nil)
+	ctx = context.WithValue(req.Context(), api.ContextUserLogin, "valid_user")
+	req = req.WithContext(ctx)
+	w = httptest.NewRecorder()
+
+	// Execute the request.
+	r.ServeHTTP(w, req)
+
+	// Check the response status code for internal server error.
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+*/
