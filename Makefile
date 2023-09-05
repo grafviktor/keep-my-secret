@@ -1,4 +1,5 @@
 LD_FLAGS = -ldflags="-X main.buildVersion=v0.9.9 -X main.buildDate=$(shell date +%Y-%m-%d) -X main.buildCommit=$(shell git rev-parse --short=8 HEAD)"
+LD_FLAGS_WIN_LIN = -ldflags="-X main.buildVersion=v0.9.9 -X main.buildDate=$(shell date +%Y-%m-%d) -X main.buildCommit=$(shell git rev-parse --short=8 HEAD) -linkmode external -extldflags -static"
 
 ## help: print this help message
 help:
@@ -32,12 +33,15 @@ test:
 build-server:
 	# https://www.andrewheiss.com/blog/2020/01/10/makefile-subdirectory-zips/
 	# https://github.com/mattn/go-sqlite3/issues/384
-	# https://words.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
 	# @-rm -r ./build
 	@echo 'Creating debug build'
-	GOOS=linux GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-linux-amd64 ./cmd/kms/*.go
-	GOOS=darwin GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-darwin-amd64 ./cmd/kms/*.go
-	# go build -ldflags="-X main.buildVersion=v0.9.9 -X main.buildDate=2023-09-05 -X main.buildCommit=ab12144e" -o build\kms-windows-amd64.exe ./cmd/kms/
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build $(LD_FLAGS) -o ./build/kms-darwin-amd64 ./cmd/kms/*.go
+	# https://words.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
+	# brew install FiloSottile/musl-cross/musl-cross
+	CC=x86_64-linux-musl-gcc CXX=x86_64-linux-musl-g++ GOARCH=amd64 GOOS=linux CGO_ENABLED=1 go build $(LD_FLAGS_WIN_LIN) -o ./build/kms-linux-amd64 ./cmd/kms/*.go
+	# https://words.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
+	# 1. brew install FiloSottile/musl-cross/musl-cross + 2. brew install mingw-w64
+	CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOARCH=amd64 GOOS=windows CGO_ENABLED=1 go build $(LD_FLAGS_WIN_LIN) -o ./build/kms-windows-amd64.exe ./cmd/kms/*.go
 
 ## build-client: create client application
 .PHONY: build-client
