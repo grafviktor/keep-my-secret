@@ -34,6 +34,11 @@ build:
 	@echo 'Creating debug build'
 	go build $(LD_FLAGS) -o ./cmd/kms/kms ./cmd/kms/*.go
 
+## build-client: creates client application
+build-client:
+	@echo 'Creating client build'
+	@cd website && npm install && npm run build
+
 ## run: start application
 .PHONY: run
 run:
