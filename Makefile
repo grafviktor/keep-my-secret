@@ -30,14 +30,25 @@ test:
 ## build-server: create binary with debugging symbols in /cmd/kms folder
 .PHONY: build-server
 build-server:
+	# https://github.com/mattn/go-sqlite3/issues/384
+	# https://words.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
+	# @-rm -r ./build
 	@echo 'Creating debug build'
-	go build $(LD_FLAGS) -o ./cmd/kms/kms ./cmd/kms/*.go
+	GOOS=linux GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-linux-amd64 ./cmd/kms/*.go
+	GOOS=darwin GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-darwin-amd64 ./cmd/kms/*.go
 
 ## build-client: create client application
 .PHONY: build-client
 build-client:
 	@echo 'Creating client build'
 	@cd website && npm install && npm run build
+
+## build: build the whole project
+.PHONY: build
+build:
+	@echo 'Building the whole project'
+	@$(MAKE) build-server
+	@$(MAKE) build-client
 
 ## http-tls-key: create self-signed certificate and store it in /tls folder
 .PHONY: http-tls-key
