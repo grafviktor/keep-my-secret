@@ -11,9 +11,11 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/config"
 )
 
+var serveDir = "./ui/static"
+
 func registerStaticHandler(config config.AppConfig, router *chi.Mux) {
 	workDir, _ := os.Getwd()
-	fsPath := http.Dir(filepath.Join(workDir, "./ui/static"))
+	fsPath := http.Dir(filepath.Join(workDir, serveDir))
 	url := config.ClientAppURL
 
 	if len(url) == 0 {
@@ -25,7 +27,6 @@ func registerStaticHandler(config config.AppConfig, router *chi.Mux) {
 	}
 
 	if url != "/" && url[len(url)-1] != '/' {
-		router.Get(url, http.RedirectHandler(url+"/", http.StatusMovedPermanently).ServeHTTP)
 		url += "/"
 	}
 	url += "*"
