@@ -15,20 +15,16 @@
 
 ### Поддерживаемые переменные окружения ###
 
-| Имя переменной | Описание | Пример |
-
-Secret     string `env:"APP_SECRET" envDefault:"romeo romeo whiskey"`
-ServerAddr string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-// PSQL connection string (DSN)
-DSN string `env:"DSN" envDefault:"./kms.db"`
-// HTTPS TLS certificate path
-HTTPSCertPath string `env:"TLS_CERT_PATH" envDefault:"./tls/cert.pem"`
-// HTTPS TLS key path
-HTTPSKeyPath string `env:"TLS_KEY_PATH" envDefault:"./tls/key.pem"`
-Domain       string `env:"DOMAIN"     envDefault:"localhost"`
-ClientURL    string `env:"CLIENT_URL"     envDefault:"/"`
-// DevMode enables CORS
-DevMode bool `env:"DEV" envDefault:"false"`
+| Имя переменной | Описание                                                 | Значение по умолчанию | Пример      |
+|----------------|----------------------------------------------------------|-----------------------|-------------|
+| APP_SECRET     | Использется для шифрования JWT-токенов                   |                       | "my secret" |
+| SERVER_ADDRESS | Хост и порт, на котором будет запущен сервер             | localhost:8080        |             |
+| DSN            | Пусть к файлу базы данных                                | "./kms.db"            |             |
+| TLS_CERT_PATH  | Путь к HTTPS сертификату                                 | "./tls/cert.pem"      |             |
+| TLS_KEY_PATH   | Путь к ключу HTTPS сертификата                           | "./tls/key.pem"       |             |
+| DOMAIN         | Домен для сессионного куки                               | localhost             |             |
+| CLIENT_URL     | Путь к клиентскому приложению в адресной строке браузера | "/"                   |             |
+| DEV            |                                                          | false                 |             |
 
 ## Детали реализации сервера ##
 
