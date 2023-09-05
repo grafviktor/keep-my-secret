@@ -1,17 +1,16 @@
-/* eslint-disable */
+import {useContext} from 'react'
 import Logo from '../Logo'
-import { useContext, useEffect } from 'react'
 import ApplicationContext from '../../context'
 
-export default ({ loggedIn }) => {
-  const { navigateTo, setAccessToken, api } = useContext(ApplicationContext)
+export default ({loggedIn}) => {
+  const {setAccessToken, api} = useContext(ApplicationContext)
 
   const logout = async () => {
     try {
       await api.logout()
       setAccessToken('')
     } catch (error) {
-      console.log(error)
+      console.warn(error)
     }
 
     // navigateTo('login')
@@ -35,11 +34,12 @@ export default ({ loggedIn }) => {
               </a>
             </li>
           </ul>
-          {loggedIn &&
+          {loggedIn
+            && (
             <div className="d-flex">
               <button className="btn btn-danger" type="button" onClick={logout}>Logout</button>
             </div>
-          }
+            )}
         </div>
       </div>
     </nav>

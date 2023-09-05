@@ -1,10 +1,9 @@
-/* eslint-disable */
 import some from 'lodash/some'
+import {useContext, useState} from 'react'
 import Logo from '../Logo'
 import Version from '../Version'
-import { useContext, useEffect, useState } from 'react'
 import ApplicationContext from '../../context'
-import { isTokenExpired } from '../../utils'
+import {isTokenExpired} from '../../utils'
 import './style.css'
 
 export default () => {
@@ -34,7 +33,7 @@ export default () => {
     }
 
     try {
-      const { data: response } = await api.register(username, password)
+      const {data: response} = await api.register(username, password)
 
       setAccessToken(response.data)
 
@@ -59,7 +58,11 @@ export default () => {
     <div className="form-register w-100 m-auto">
       <Logo />
       <form>
-        <h1 className="h3 mb-3 fw-normal">Please register or <a href="register" onClick={onSignInClick}>sign in</a></h1>
+        <h1 className="h3 mb-3 fw-normal">
+          Please register or
+          {' '}
+          <a href="register" onClick={onSignInClick}>sign in</a>
+        </h1>
 
         <div className="form-floating">
           <input
@@ -99,7 +102,8 @@ export default () => {
           <button
             className="btn btn-primary w-100 py-2"
             type="button"
-            onClick={onRegisterButtonClick}>
+            onClick={onRegisterButtonClick}
+          >
             Register
           </button>
         </div>

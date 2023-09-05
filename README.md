@@ -15,6 +15,21 @@
 
 ### Поддерживаемые переменные окружения ###
 
+| Имя переменной | Описание | Пример |
+
+Secret     string `env:"APP_SECRET" envDefault:"romeo romeo whiskey"`
+ServerAddr string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+// PSQL connection string (DSN)
+DSN string `env:"DSN" envDefault:"./kms.db"`
+// HTTPS TLS certificate path
+HTTPSCertPath string `env:"TLS_CERT_PATH" envDefault:"./tls/cert.pem"`
+// HTTPS TLS key path
+HTTPSKeyPath string `env:"TLS_KEY_PATH" envDefault:"./tls/key.pem"`
+Domain       string `env:"DOMAIN"     envDefault:"localhost"`
+ClientURL    string `env:"CLIENT_URL"     envDefault:"/"`
+// DevMode enables CORS
+DevMode bool `env:"DEV" envDefault:"false"`
+
 ## Детали реализации сервера ##
 
 Сервер принимает и обрабатывает REST-запросы от клиентов, а также взаимодействует с хранилищем данных. Сервер работает только с использованием протокола HTTPS.

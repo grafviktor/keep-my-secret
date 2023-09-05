@@ -1,7 +1,5 @@
-/* eslint-disable */
 import get from 'lodash/get'
-import isNil from 'lodash/isNil'
-import { useMemo, useState, useEffect } from 'react'
+import {useMemo, useState, useEffect} from 'react'
 import Navigation from '../Navigation'
 import Error from '../Error'
 import Login from '../Login'
@@ -9,18 +7,22 @@ import Register from '../Register'
 import Home from '../Home'
 import PaymentCard from '../Home/PaymentCard'
 import File from '../Home/File'
+import Note from '../Home/Note'
+import Password from '../Home/Password'
 import ApplicationContext from '../../context'
-import { isTokenExpired } from '../../utils'
+import {isTokenExpired} from '../../utils'
 import createAPI from '../../api'
 
 import './style.css'
 
 const viewToComponentMap = {
-  login: Login,
-  register: Register,
-  home: Home,
-  card: PaymentCard,
-  file: File,
+  login    : Login,
+  register : Register,
+  home     : Home,
+  card     : PaymentCard,
+  file     : File,
+  note     : Note,
+  pass     : Password,
 }
 
 export default () => {
@@ -38,36 +40,30 @@ export default () => {
 
   const getVersion = () => api.getVersion()
 
-  const createSecret = async (secret) => {
-    return api.createSecret(accessToken, secret)
-  }
+  // eslint-disable-next-line no-shadow
+  const createSecret = async (secret) => api.createSecret(accessToken, secret)
 
-  const updateSecret = (secret, id) => {
-    return api.updateSecret(accessToken, id, secret)
-  }
+  // eslint-disable-next-line no-shadow
+  const updateSecret = (secret, id) => api.updateSecret(accessToken, id, secret)
 
-  const deleteSecret = (id) => {
-    return api.deleteSecret(accessToken, id)
-  }
+  const deleteSecret = (id) => api.deleteSecret(accessToken, id)
 
   const getSecretFile = async (id) => {
     const response = await api.getSecretFile(accessToken, id)
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
     const contentDispositionHeader = get(response, 'headers.content-disposition', '')
     const match = contentDispositionHeader.match(/.*filename=([^"]+)/)
 
     if (match) {
-      link.href = url;
-      link.setAttribute('download', match[1]);
-      document.body.appendChild(link);
-      link.click();
+      link.href = url
+      link.setAttribute('download', match[1])
+      document.body.appendChild(link)
+      link.click()
     }
   }
 
-  const fetchSecrets = () => {
-    return api.fetchSecrets(accessToken)
-  }
+  const fetchSecrets = () => api.fetchSecrets(accessToken)
 
   useEffect(() => {
     if (!loggedIn) {

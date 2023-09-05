@@ -33,6 +33,8 @@ export default ({secret}) => {
   const getType = (type) => ({
     card : 'Bank Card',
     file : 'Secret File',
+    note : 'Secret Note',
+    pass : 'Login and Password',
   }[type] || type)
 
   return (

@@ -1,8 +1,7 @@
-/* eslint-disable */
-import cx from 'classnames';
+import cx from 'classnames'
 import get from 'lodash/get'
 import map from 'lodash/map'
-import { useContext, useEffect } from 'react'
+import {useContext, useEffect} from 'react'
 import ApplicationContext from '../../context'
 import SecretItem from './ListItem'
 import './style.css'
@@ -14,13 +13,13 @@ export default ({appBusy}) => {
     setAlertMessage,
     setSecret,
     setSecrets,
-    secrets
+    secrets,
   } = useContext(ApplicationContext)
 
   useEffect(() => {
     (async () => {
       try {
-        const { data: response } = await fetchSecrets()
+        const {data: response} = await fetchSecrets()
 
         setSecrets(response.data)
       } catch (error) {
@@ -43,9 +42,9 @@ export default ({appBusy}) => {
       <div className="kms-secret-list">
         {map(secrets, (secret, id) => <SecretItem key={id} secret={{id, ...secret}} />)}
         <div className={cx(
-            "spinner-grow text-primary kms-busy-indicator",
-            {'kms-busy-indicator__shown': appBusy}
-          )}
+          'spinner-grow text-primary kms-busy-indicator',
+          {'kms-busy-indicator__shown': appBusy},
+        )}
         >
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -57,6 +56,7 @@ export default ({appBusy}) => {
         <ul className="dropdown-menu">
           <li>
             <button
+              type="button"
               className="dropdown-item"
               id="card"
               onClick={onNewItemButtonClick}
@@ -67,8 +67,9 @@ export default ({appBusy}) => {
 
           <li>
             <button
+              type="button"
               className="dropdown-item"
-              id="password"
+              id="pass"
               onClick={onNewItemButtonClick}
             >
               Password
@@ -77,6 +78,7 @@ export default ({appBusy}) => {
 
           <li>
             <button
+              type="button"
               className="dropdown-item"
               id="note"
               onClick={onNewItemButtonClick}
@@ -87,6 +89,7 @@ export default ({appBusy}) => {
 
           <li>
             <button
+              type="button"
               className="dropdown-item"
               id="file"
               onClick={onNewItemButtonClick}
