@@ -9,12 +9,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/caarlos0/env/v7"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/grafviktor/keep-my-secret/internal/api/web"
-
-	"github.com/caarlos0/env/v7"
-
 	"github.com/grafviktor/keep-my-secret/internal/config"
 	"github.com/grafviktor/keep-my-secret/internal/storage"
 	"github.com/grafviktor/keep-my-secret/internal/version"
