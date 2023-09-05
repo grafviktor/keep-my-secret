@@ -30,12 +30,14 @@ test:
 ## build-server: create binary with debugging symbols in /cmd/kms folder
 .PHONY: build-server
 build-server:
+	# https://www.andrewheiss.com/blog/2020/01/10/makefile-subdirectory-zips/
 	# https://github.com/mattn/go-sqlite3/issues/384
 	# https://words.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
 	# @-rm -r ./build
 	@echo 'Creating debug build'
 	GOOS=linux GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-linux-amd64 ./cmd/kms/*.go
 	GOOS=darwin GOARCH=amd64 go build $(LD_FLAGS) -o ./build/kms-darwin-amd64 ./cmd/kms/*.go
+	# go build -ldflags="-X main.buildVersion=v0.9.9 -X main.buildDate=2023-09-05 -X main.buildCommit=ab12144e" -o build\kms-windows-amd64.exe ./cmd/kms/
 
 ## build-client: create client application
 .PHONY: build-client
