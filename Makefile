@@ -28,16 +28,23 @@ test:
 	@echo 'Running unit tests'
 	go test -race -vet=off -count=1 -coverprofile unit.txt -covermode atomic ./...
 
-## build: creates binary with debugging symbols in /cmd/kms folder
-.PHONY: build
-build:
+## build-server: create binary with debugging symbols in /cmd/kms folder
+.PHONY: build-server
+build-server:
 	@echo 'Creating debug build'
 	go build $(LD_FLAGS) -o ./cmd/kms/kms ./cmd/kms/*.go
 
-## build-client: creates client application
+## build-client: create client application
+.PHONY: build-client
 build-client:
 	@echo 'Creating client build'
 	@cd website && npm install && npm run build
+
+## http-tls-key: create self-signed certificate and store it in /tls folder
+.PHONY: http-tls-key
+http-tls-key:
+	@echo 'Creating self-signed HTTP TLS certificate'
+	@cd tls && go run $$GOPATH/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
 
 ## run: start application
 .PHONY: run
