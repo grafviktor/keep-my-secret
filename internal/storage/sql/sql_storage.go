@@ -1,4 +1,4 @@
-package storage
+package sql
 
 import (
 	"context"
@@ -11,8 +11,6 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/constant"
 	"github.com/grafviktor/keep-my-secret/internal/model"
 )
-
-var _ Storage = &sqlStorage{}
 
 type sqlStorage struct {
 	*sql.DB
@@ -194,7 +192,7 @@ func (ss sqlStorage) Close() error {
 	return ss.DB.Close()
 }
 
-func NewSQLStorage(ctx context.Context, dsn string) Storage {
+func NewSQLStorage(ctx context.Context, dsn string) sqlStorage {
 	db, err := sql.Open("sqlite3", "./kms.db")
 	if err != nil {
 		panic(err)

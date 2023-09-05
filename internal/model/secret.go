@@ -14,8 +14,8 @@ import (
 var shouldNotEncrypt = []string{"ID", "Encryptor"}
 
 type Encryptor interface {
-	Encrypt(plaindata []byte, key string) ([]byte, error)
-	Decrypt(cipherdata []byte, key string) ([]byte, error)
+	Encrypt(secret *Secret, key, salt string) error
+	Decrypt(secret *Secret, key, salt string) error
 }
 
 type Secret struct {
@@ -44,6 +44,10 @@ const (
 )
 
 func (s *Secret) Encrypt(key, salt string) error {
+	if s.Encryptor != nil {
+		return s.Encryptor.Encrypt(s, key, salt)
+	}
+
 	v := reflect.Indirect(reflect.ValueOf(s))
 	typeOfP := v.Type()
 
@@ -73,15 +77,14 @@ func (s *Secret) Encrypt(key, salt string) error {
 			continue
 		}
 
-		var encrypted []byte
-		var err error
-
-		if s.Encryptor == nil {
-			encrypted, err = utils.Encrypt(toEncrypt, key)
-		} else {
-			encrypted, err = s.Encryptor.Encrypt(toEncrypt, key)
-		}
-
+		encrypted, err := utils.Encrypt(toEncrypt, key)
+		// var encrypted []byte
+		// var err error
+		// if s.Encryptor == nil {
+		// 	encrypted, err = utils.Encrypt(toEncrypt, key)
+		// } else {
+		// 	encrypted, err = s.Encryptor.Encrypt(toEncrypt, key)
+		// }
 		if err != nil {
 			return fmt.Errorf("secret.Encrypt: %s", err.Error())
 		}
@@ -97,6 +100,10 @@ func (s *Secret) Encrypt(key, salt string) error {
 }
 
 func (s *Secret) Decrypt(key, salt string) error {
+	if s.Encryptor != nil {
+		return s.Encryptor.Decrypt(s, key, salt)
+	}
+
 	v := reflect.Indirect(reflect.ValueOf(s))
 	typeOfP := v.Type()
 
@@ -126,15 +133,13 @@ func (s *Secret) Decrypt(key, salt string) error {
 			continue
 		}
 
-		var decrypted []byte
-		var err error
-
-		if s.Encryptor == nil {
-			decrypted, err = utils.Decrypt(toDecrypt, key)
-		} else {
-			decrypted, err = s.Encryptor.Decrypt(toDecrypt, key)
-		}
-
+		decrypted, err := utils.Decrypt(toDecrypt, key)
+		// var decrypted []byte
+		// var err error
+		// if s.Encryptor == nil {
+		// } else {
+		// 	decrypted, err = s.Encryptor.Decrypt(toDecrypt, key)
+		// }
 		if err != nil {
 			return fmt.Errorf("secret encrypt: %s", err.Error())
 		}

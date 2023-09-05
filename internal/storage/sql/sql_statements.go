@@ -1,10 +1,10 @@
-package storage
+package sql
 
 const sqlCreateUserTable = `
 CREATE TABLE IF NOT EXISTS user (
-	id INTEGER PRIMARY KEY AUTOINCREMENT, 
-	login VARCHAR(100) UNIQUE, 
-	password TEXT NOT NULL, 
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	login VARCHAR(100) UNIQUE,
+	password TEXT NOT NULL,
 	restore_password TEXT,
 	data_key TEXT
 );
@@ -53,12 +53,12 @@ INSERT INTO secret (
         file,
 		file_name,
 		cardholder_name,
-		card_number, 
+		card_number,
 		expiration,
 		cvv,
 		user_id
 	)
-	VALUES 
+	VALUES
 		($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, (SELECT id FROM user WHERE login = $12))
 	RETURNING id;
 `
@@ -72,7 +72,7 @@ UPDATE secret SET
 		note = $5,
 		file_name = $6,
 		cardholder_name = $7,
-		card_number = $8, 
+		card_number = $8,
 		expiration = $9,
 		cvv = $10
 	WHERE id = $11
@@ -80,7 +80,7 @@ UPDATE secret SET
 `
 
 var sqlGetSecretByID = `
-SELECT 
+SELECT
     id,
     secret_type,
 	title,
@@ -90,18 +90,18 @@ SELECT
 	file,
 	file_name,
 	cardholder_name,
-	card_number, 
+	card_number,
 	expiration,
 	cvv
-FROM secret 
-		WHERE id = $1 
+FROM secret
+		WHERE id = $1
 		  AND user_id = (
 	SELECT id FROM user WHERE login = $2
 );
 `
 
 var sqlFindSecretsByUser = `
-SELECT 
+SELECT
     id,
     secret_type,
 	title,
@@ -111,7 +111,7 @@ SELECT
 	file,
 	file_name,
 	cardholder_name,
-	card_number, 
+	card_number,
 	expiration,
 	cvv
 FROM secret
@@ -122,8 +122,8 @@ FROM secret
 
 var sqlDeleteSecret = `
 DELETE FROM secret
-WHERE 
-    id = $1 
+WHERE
+    id = $1
 AND
     user_id = (
         SELECT id FROM user WHERE login = $2

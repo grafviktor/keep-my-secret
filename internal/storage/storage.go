@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/grafviktor/keep-my-secret/internal/model"
+	"github.com/grafviktor/keep-my-secret/internal/storage/sql"
 )
 
 type Storage interface {
@@ -22,5 +23,5 @@ func GetStorage(ctx context.Context, storageType Type, dsn string) (Storage, err
 		return nil, errors.New("unsupported storage type")
 	}
 
-	return NewSQLStorage(ctx, dsn), nil
+	return sql.NewSQLStorage(ctx, dsn), nil
 }

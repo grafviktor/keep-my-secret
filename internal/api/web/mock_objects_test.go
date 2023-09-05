@@ -3,7 +3,6 @@ package web
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 
@@ -30,13 +29,12 @@ func (mockStorage MockStorage) SaveSecret(ctx context.Context, secret *model.Sec
 
 type mockEncryptor struct{}
 
-func (ms mockEncryptor) Encrypt(plaindata []byte, key string) ([]byte, error) {
-	return plaindata, nil
+func (ms mockEncryptor) Encrypt(secret *model.Secret, key, salt string) error {
+	return nil
 }
 
-func (ms mockEncryptor) Decrypt(cipherdata []byte, key string) ([]byte, error) {
-	log.Println("called")
-	return cipherdata, nil
+func (ms mockEncryptor) Decrypt(secret *model.Secret, key, salt string) error {
+	return nil
 }
 
 func (mockStorage MockStorage) GetSecretsByUser(ctx context.Context, login string) (map[int]*model.Secret, error) {

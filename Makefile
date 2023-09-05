@@ -19,7 +19,6 @@ audit:
 	staticcheck ./...
 	@echo 'Linting code...'
 	golangci-lint run
-	@#$(MAKE) mylint
 	@$(MAKE) test
 
 ## test: run unit tests
@@ -50,7 +49,7 @@ http-tls-key:
 .PHONY: run
 run:
 	@echo 'Attempting to start the app'
-	go run $(LD_FLAGS) ./cmd/kms/*.go
+	DEV=true go run $(LD_FLAGS) ./cmd/kms/*.go
 
 ## lint: run linter
 .PHONY: lint

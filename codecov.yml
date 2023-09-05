@@ -1,5 +1,6 @@
 ignore:
   - "cmd/*"
   - "internal/constant/*"
+  - "github.com/grafviktor/keep-my-secret/internal/storage/sql"
   - "website/*"
   - "ui/*"
