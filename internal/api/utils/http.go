@@ -17,7 +17,7 @@ type JSONResponse struct {
 // WriteJSON writes a JSON response to the client
 // w - http.ResponseWriter
 // status - http status code
-// data - data to be marshalled into JSON
+// data - data to be marshaled into JSON
 // headers - optional headers to be written to the response
 func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
 	out, err := json.Marshal(data)
@@ -44,7 +44,7 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers ...h
 // ReadJSON writes a response to the client
 // w - http.ResponseWriter
 // r - http.Request
-// data - data to be marshalled into JSON
+// data - data to be marshaled into JSON
 func ReadJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	maxBytes := 1024 * 1024 // one megabyte
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))

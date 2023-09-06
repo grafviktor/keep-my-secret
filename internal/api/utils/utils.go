@@ -53,7 +53,8 @@ func normalizeAESKey(key string) string {
 	return key
 }
 
-// Encrypt - encrypts data with AES using key. If key is less that supported AES key length, then it is padded with zeros.
+// Encrypt - encrypts data with AES using key. If key is less that supported AES key length,
+// then it is padded with zeros.
 // plaindata - data to be encrypted
 // key - key to be used for encryption
 // Returns encrypted data or error
@@ -76,7 +77,8 @@ func Encrypt(plaindata []byte, key string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// Decrypt - decrypts data with AES using key. If key is less that supported AES key length, then it is padded with zeros.
+// Decrypt - decrypts data with AES using key. If key is less that supported AES key length,
+// then it is padded with zeros.
 // cipherdata - data to be decrypted
 // key - key to be used for decryption
 // Returns decrypted data or error
