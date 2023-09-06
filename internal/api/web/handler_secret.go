@@ -27,7 +27,7 @@ type apiRouteProvider struct {
 	keyCache keyCache
 }
 
-// NewApiHandler - self-explanatory
+// newSecretHandlerProvider - self-explanatory
 func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Storage) apiRouteProvider {
 	return apiRouteProvider{
 		config:   appConfig,
@@ -36,6 +36,7 @@ func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Sto
 	}
 }
 
+// TODO: maxFileSize should be moved to application configuration level instead of hardcoding it here
 const maxFileSize = 1024 * 1024 * 1 // 1MB
 func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
 	err := r.ParseMultipartForm(maxFileSize) // Max memory to use for parsing, in this case 10MB
@@ -66,6 +67,7 @@ func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
 	return nil
 }
 
+// SaveSecretHandler - HTTP handler for saving a secret user data
 func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	var secret model.Secret
@@ -136,6 +138,7 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// ListSecretsHandler - HTTP handler that returns all user's secret items
 func (a *apiRouteProvider) ListSecretsHandler(w http.ResponseWriter, r *http.Request) {
 	login := r.Context().Value(api.ContextUserLogin).(string)
 	key, err := a.keyCache.Get(login)
@@ -185,6 +188,7 @@ func (a *apiRouteProvider) ListSecretsHandler(w http.ResponseWriter, r *http.Req
 	})
 }
 
+// DeleteSecretHandler - HTTP handler for deleting a secret item
 func (a *apiRouteProvider) DeleteSecretHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	login := r.Context().Value(api.ContextUserLogin).(string)
@@ -208,6 +212,7 @@ func (a *apiRouteProvider) DeleteSecretHandler(w http.ResponseWriter, r *http.Re
 	})
 }
 
+// DownloadSecretFileHandler - HTTP handler for downloading a user's binary file
 func (a *apiRouteProvider) DownloadSecretFileHandler(w http.ResponseWriter, r *http.Request) {
 	login := r.Context().Value(api.ContextUserLogin).(string)
 	secretID := chi.URLParam(r, "id")

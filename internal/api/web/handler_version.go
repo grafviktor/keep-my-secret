@@ -16,6 +16,7 @@ type versionResponse struct {
 	APIVersion   string `json:"api_version"`
 }
 
+// VersionHandler returns the version of the application, including API version
 func VersionHandler(w http.ResponseWriter, _ *http.Request) {
 	_ = utils.WriteJSON(w, http.StatusOK, api.Response{
 		Status: constant.APIStatusSuccess,

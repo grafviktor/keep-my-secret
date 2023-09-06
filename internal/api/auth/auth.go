@@ -25,30 +25,46 @@ const (
 	siteMode = http.SameSiteNoneMode
 )
 
+// Auth - struct contains all necessary information for JWT token generation
 type Auth struct {
-	Issuer        string
-	Audience      string
-	Secret        string
-	TokenExpiry   time.Duration
+	// Issuer of the token. See JWT.io for more information
+	Issuer string
+	// Audience of the token. See JWT.io for more information
+	Audience string
+	// Secret of the token. Self-explanatory.
+	Secret string
+	// TokenExpiry is duration of the access token
+	TokenExpiry time.Duration
+	// RefreshExpiry is duration of the refresh token
 	RefreshExpiry time.Duration
-	CookieDomain  string
-	CookiePath    string
-	CookieName    string
+	// CookieDomain is domain of the cookie. Self-explanatory.
+	CookieDomain string
+	// CookiePath is path of the cookie. Self-explanatory. In our case it's always project root.
+	CookiePath string
+	//  CookieName is name of the cookie. Self-explanatory.
+	CookieName string
 }
 
+// JWTUser - struct for storing user details. Only ID for the moment
 type JWTUser struct {
+	// ID contains user login which was used during registration process
 	ID string `json:"id"`
 }
 
+// TokenPair - struct is used for marshaling tokens
 type TokenPair struct {
-	AccessToken  string `json:"access_token"`
+	// AccessToken is a short-lived token which is used for accessing application resources.
+	AccessToken string `json:"access_token"`
+	// RefreshToken is a long-lived token which is used for querying access tokens
 	RefreshToken string `json:"refresh_token"`
 }
 
+// Claims - is utilizing default jwt claims. A subject for further extension.
 type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// New - creates new Auth struct and with application defined values
 func New(ac config.AppConfig) Auth {
 	return Auth{
 		Issuer:        ac.JWTIssuer,
@@ -62,6 +78,7 @@ func New(ac config.AppConfig) Auth {
 	}
 }
 
+// GenerateTokenPair - create new Refresh and Access tokens
 func (auth Auth) GenerateTokenPair(user *JWTUser) (TokenPair, error) { // pair for token and refresh token
 	// Create a token
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -104,6 +121,7 @@ func (auth Auth) GenerateTokenPair(user *JWTUser) (TokenPair, error) { // pair f
 	return tokenPairs, nil
 }
 
+// GetRefreshCookie - create new refresh cookie which contains refresh token. Used when user logs in (or register).
 func (auth Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
 	return &http.Cookie{
 		Name:     auth.CookieName,
@@ -117,7 +135,8 @@ func (auth Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
 	}
 }
 
-// GetExpiredRefreshCookie - For logging out
+// GetExpiredRefreshCookie - same as GetRefreshCookie,  but with expired time.  Used when user logs out.
+// There is way delete existing cookie from browser, thus replacing the existing one with expired.
 func (auth Auth) GetExpiredRefreshCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:     auth.CookieName,
@@ -131,8 +150,11 @@ func (auth Auth) GetExpiredRefreshCookie() *http.Cookie {
 	}
 }
 
+// JWTVerifier - used for verifying user tokens
 type JWTVerifier struct{}
 
+// VerifyAuthHeader - extract users token from HTTP header and verifies it.
+//
 //nolint:lll
 func (t JWTVerifier) VerifyAuthHeader(config config.AppConfig, w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
 	w.Header().Add("Vary", "Authorization")

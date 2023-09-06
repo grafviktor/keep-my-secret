@@ -4,8 +4,10 @@ import (
 	"net/http"
 )
 
+// EnableCORS - middleware to support CORS requests. Used for development only.
 func (m *middleware) EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: This "if" statement should be moved to router level.
 		if m.config.DevMode {
 			// That was set for my dev environment, where rest client was running in webpack-dev server
 			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))

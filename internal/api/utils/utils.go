@@ -9,13 +9,14 @@ import (
 	"time"
 )
 
-// IsUsernameConformsPolicy - checks if username conforms with security policy
+// IsUsernameConformsPolicy - checks if username conforms with security policy. Stub function.
 // Normally we should have generic settings for username and password complexity. But I'm reluctant
-// to complicate this logic for a pet project
+// to complicate this logic for a pet project.
 func IsUsernameConformsPolicy(username string) bool {
 	return len(username) > 0
 }
 
+// IsPasswordConformsPolicy - checks if password conforms with security policy. Stub function.
 func IsPasswordConformsPolicy(password string) bool {
 	return len(password) > 0
 }
@@ -25,6 +26,8 @@ var (
 	validRandomChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?~"
 )
 
+// GenerateRandomPassword - generates password which is used to encrypt user data
+// Returns string of the same length as aesKeyLength
 func GenerateRandomPassword() string {
 	mathrand.Seed(time.Now().UnixNano())
 
@@ -50,6 +53,10 @@ func normalizeAESKey(key string) string {
 	return key
 }
 
+// Encrypt - encrypts data with AES using key. If key is less that supported AES key length, then it is padded with zeros.
+// plaindata - data to be encrypted
+// key - key to be used for encryption
+// Returns encrypted data or error
 func Encrypt(plaindata []byte, key string) ([]byte, error) {
 	key = normalizeAESKey(key)
 	block, err := aes.NewCipher([]byte(key))
@@ -69,6 +76,10 @@ func Encrypt(plaindata []byte, key string) ([]byte, error) {
 	return ciphertext, nil
 }
 
+// Decrypt - decrypts data with AES using key. If key is less that supported AES key length, then it is padded with zeros.
+// cipherdata - data to be decrypted
+// key - key to be used for decryption
+// Returns decrypted data or error
 func Decrypt(cipherdata []byte, key string) ([]byte, error) {
 	key = normalizeAESKey(key)
 	block, err := aes.NewCipher([]byte(key))

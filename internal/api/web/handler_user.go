@@ -24,7 +24,7 @@ type userHTTPHandler struct {
 	authUtils authUtils
 }
 
-// NewApiHandler - self-explanatory
+// newUserHandlerProvider - returns a set of handlers to support auth requests
 func newUserHandlerProvider(appConfig config.AppConfig, storage userStorage) userHTTPHandler {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	return userHTTPHandler{
@@ -44,6 +44,7 @@ type userModel interface {
 	GetDataKey(password string) (string, error)
 }
 
+// handleSuccessFullUserSignIn - set JWT tokens when a user signs in successfully
 func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, user userModel, cred credentials) {
 	// secret, err := user.GetDataKey(cred.Password+h.config.Secret)
 	secret, err := user.GetDataKey(cred.Password)
@@ -85,6 +86,7 @@ func (h *userHTTPHandler) handleSuccessFullUserSignIn(w http.ResponseWriter, use
 	})
 }
 
+// RegisterHandler - HTTP handler which handles user registration
 func (h *userHTTPHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var cred credentials
 	if err := utils.ReadJSON(w, r, &cred); err != nil {
@@ -148,6 +150,7 @@ func (h *userHTTPHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 	h.handleSuccessFullUserSignIn(w, user, cred)
 }
 
+// LoginHandler - HTTP handler which handles user login
 func (h *userHTTPHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var cred credentials
 	// Read login and password
@@ -213,6 +216,8 @@ func (h *userHTTPHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	h.handleSuccessFullUserSignIn(w, user, cred)
 }
 
+// RefreshTokenHandler - HTTP handler which allows to refresh user tokens (including access token)
+// to avoid asking user to re-login.
 func (h *userHTTPHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Client does not provide cookie
 	for _, cookie := range r.Cookies() {
@@ -274,6 +279,7 @@ func (h *userHTTPHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
+// LogoutHandler - HTTP handler which destroys user refresh token
 func (h *userHTTPHandler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	a := auth.New(h.config)
 	refreshCookie := a.GetExpiredRefreshCookie()

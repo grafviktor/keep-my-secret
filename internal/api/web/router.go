@@ -10,6 +10,7 @@ import (
 	"github.com/grafviktor/keep-my-secret/internal/storage"
 )
 
+// NewHTTPRouter - main HTTP router of the application. Creates routes and enables middlewares.
 func NewHTTPRouter(appConfig config.AppConfig, storage storage.Storage) *chi.Mux {
 	router := chi.NewRouter()
 	if true {

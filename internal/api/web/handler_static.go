@@ -13,6 +13,7 @@ import (
 
 var serveDir = "./ui/static"
 
+// registerStaticHandler - registers a handler for serving client application.
 func registerStaticHandler(config config.AppConfig, router *chi.Mux) {
 	workDir, _ := os.Getwd()
 	fsPath := http.Dir(filepath.Join(workDir, serveDir))
