@@ -15,7 +15,7 @@ import (
 const cookieName = "refresh_cookie"
 
 func TestGetRefreshCookie(t *testing.T) {
-	// Initialize your Auth object with relevant settings
+	// Initialize my Auth object with relevant settings
 	auth := &Auth{
 		CookieName:    cookieName,
 		CookiePath:    "/",
@@ -57,7 +57,7 @@ func TestGetRefreshCookie(t *testing.T) {
 }
 
 func TestGetExpiredRefreshCookie(t *testing.T) {
-	// Initialize your Auth object with relevant settings
+	// Initialize my Auth object with relevant settings
 	auth := &Auth{
 		CookieName: "refresh_cookie",
 		CookiePath: "/",

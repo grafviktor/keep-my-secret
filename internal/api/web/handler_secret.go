@@ -91,7 +91,21 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	login := r.Context().Value(api.ContextUserLogin).(string)
+	var login string
+	if value := r.Context().Value(api.ContextUserLogin); value != nil {
+		login = value.(string)
+	} else {
+		log.Printf("SaveSecretHandler error: %s\n", "username not found in request context")
+
+		_ = utils.WriteJSON(w, http.StatusUnauthorized, api.Response{
+			Status:  constant.APIStatusFail,
+			Message: constant.APIMessageUnauthorized,
+			Data:    nil,
+		})
+
+		return
+	}
+
 	key, err := a.keyCache.Get(login)
 	if err != nil {
 		log.Printf("SaveSecretHandler error: %s\n", err.Error())
@@ -119,7 +133,6 @@ func (a *apiRouteProvider) SaveSecretHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	_, err = a.storage.SaveSecret(r.Context(), &secret, login)
-
 	if err != nil {
 		log.Printf("SaveSecretHandler error: %s\n", err.Error())
 

@@ -343,7 +343,6 @@ func TestRefreshTokenHandler(t *testing.T) {
 	for _, testCase := range testCases {
 		// Create a sample AppConfig for testing
 		appConfig := config.AppConfig{
-			// Initialize your AppConfig fields here
 			Secret: testCase.secret,
 		}
 
@@ -358,7 +357,7 @@ func TestRefreshTokenHandler(t *testing.T) {
 		// Create a mock response recorder
 		rr := httptest.NewRecorder()
 
-		// Create an instance of your userHTTPHandler with the mock dependencies
+		// Create an instance of my userHTTPHandler with the mock dependencies
 		handler := &userHTTPHandler{
 			config: appConfig,
 			storage: &MockStorage{
@@ -387,7 +386,6 @@ func TestRefreshTokenHandler(t *testing.T) {
 func TestLogoutHandler(t *testing.T) {
 	// Create a sample AppConfig for testing
 	appConfig := config.AppConfig{
-		// Initialize your AppConfig fields here
 		Secret: "your_secret_key",
 	}
 
@@ -400,7 +398,7 @@ func TestLogoutHandler(t *testing.T) {
 	// Create a mock response recorder
 	rr := httptest.NewRecorder()
 
-	// Create an instance of your userHTTPHandler with the mock dependency
+	// Create an instance of my userHTTPHandler with the mock dependency
 	handler := &userHTTPHandler{
 		config: appConfig,
 	}

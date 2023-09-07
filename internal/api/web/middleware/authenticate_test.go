@@ -28,7 +28,7 @@ func (m mockAuthVerifier) VerifyAuthHeader(config config.AppConfig, w http.Respo
 }
 
 func TestAuthRequired(t *testing.T) {
-	// Create an instance of your middleware with the mock dependency
+	// Create an instance of my middleware with the mock dependency
 	mw := middleware{
 		config:       config.AppConfig{},
 		authVerifier: mockAuthVerifier{},

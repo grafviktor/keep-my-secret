@@ -66,7 +66,7 @@ func TestParseMultiPartSecretRequest(t *testing.T) {
 }
 
 func TestParseMultiPartSecretRequestNegative(t *testing.T) {
-	// Create a sample multipart form request with JSON data and a file
+	// Malformed JSON
 	jsonData := `{"name": "mySecret", faulty`
 
 	// Create a buffer to hold the form data
@@ -95,12 +95,17 @@ func TestParseMultiPartSecretRequestNegative(t *testing.T) {
 	// Call the parseMultiPartSecretRequest function
 	err := parseMultiPartSecretRequest(req, secret)
 	require.Error(t, err)
+
+	// Wrong content type
+	req = httptest.NewRequest("POST", "/your-api-endpoint", body)
+	req.Header.Set("Content-Type", "")
+	err = parseMultiPartSecretRequest(req, nil)
+	require.Error(t, err)
 }
 
 func TestSaveSecretHandler(t *testing.T) {
 	// Create a sample AppConfig for testing
 	appConfig := config.AppConfig{
-		// Initialize your AppConfig fields here
 		Secret: "your_secret_key",
 	}
 
@@ -116,7 +121,7 @@ func TestSaveSecretHandler(t *testing.T) {
 	// Create a mock response recorder
 	rr := httptest.NewRecorder()
 
-	// Create an instance of your apiRouteProvider with mock dependencies
+	// Create an instance of my apiRouteProvider with mock dependencies
 	handler := &apiRouteProvider{
 		config: appConfig,
 		storage: &MockStorage{
@@ -145,10 +150,79 @@ func TestSaveSecretHandler(t *testing.T) {
 	}
 }
 
+func TestSaveSecretHandlerNegative(t *testing.T) {
+	// Create a sample AppConfig for testing
+	appConfig := config.AppConfig{
+		Secret: "your_secret_key",
+	}
+
+	testCases := []struct {
+		name                      string
+		payload                   string
+		login                     string
+		shouldSetContextUserLogin bool
+		httpStatusCode            int
+	}{
+		{
+			name:                      "no user login in request context",
+			payload:                   `{"title": "mySecret", "note": "Test secret"}`,
+			shouldSetContextUserLogin: false,
+			login:                     "valid_user",
+			httpStatusCode:            http.StatusUnauthorized,
+		},
+		{
+			name:                      "malformed JSON",
+			payload:                   `{"title": "mySecret", malformed`,
+			shouldSetContextUserLogin: true,
+			login:                     "valid_user",
+			httpStatusCode:            http.StatusBadRequest,
+		},
+		{
+			name:                      "error getting decrypt key from keycache",
+			payload:                   `{"title": "mySecret", "note": "Test secret"}`,
+			shouldSetContextUserLogin: true,
+			login:                     "invalid_user",
+			httpStatusCode:            http.StatusUnauthorized,
+		},
+		{
+			name:                      "no user login in request context",
+			payload:                   `{"title": "mySecret", "note": "Test secret"}`,
+			shouldSetContextUserLogin: true,
+			login:                     "valid_user_invalid_secret",
+			httpStatusCode:            http.StatusInternalServerError,
+		},
+	}
+
+	for _, tc := range testCases {
+		// Create a sample HTTP request with JSON data
+		req, _ := http.NewRequest("POST", "/your-api-endpoint", strings.NewReader(tc.payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		if tc.shouldSetContextUserLogin {
+			req = req.WithContext(context.WithValue(req.Context(), api.ContextUserLogin, tc.login))
+		}
+
+		// Create a mock response recorder
+		rr := httptest.NewRecorder()
+
+		// Create an instance of my apiRouteProvider with mock dependencies
+		handler := &apiRouteProvider{
+			config: appConfig,
+			storage: &MockStorage{
+				users: make(map[string]*model.User),
+			},
+			keyCache: &MockKeyCache{},
+		}
+
+		handler.SaveSecretHandler(rr, req)
+
+		require.Equal(t, tc.httpStatusCode, rr.Code)
+	}
+}
+
 func TestListSecretsHandler(t *testing.T) {
 	// Create a sample AppConfig for testing
 	appConfig := config.AppConfig{
-		// Initialize your AppConfig fields here
 		Secret: "your_secret_key",
 	}
 
@@ -161,7 +235,7 @@ func TestListSecretsHandler(t *testing.T) {
 	// Create a mock response recorder
 	rr := httptest.NewRecorder()
 
-	// Create an instance of your apiRouteProvider with mock dependencies
+	// Create an instance of my apiRouteProvider with mock dependencies
 	handler := &apiRouteProvider{
 		config: appConfig,
 		storage: &MockStorage{

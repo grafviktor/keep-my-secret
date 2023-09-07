@@ -10,9 +10,7 @@ import (
 
 func TestNewMiddleware(t *testing.T) {
 	// Create a sample AppConfig for testing
-	appConfig := config.AppConfig{
-		// Initialize your AppConfig fields here
-	}
+	appConfig := config.AppConfig{}
 
 	// Call the New function to create a middleware instance
 	mw := New(appConfig)

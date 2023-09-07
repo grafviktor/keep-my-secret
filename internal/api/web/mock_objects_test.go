@@ -24,6 +24,9 @@ type MockStorage struct {
 
 //nolint:lll
 func (mockStorage MockStorage) SaveSecret(ctx context.Context, secret *model.Secret, login string) (*model.Secret, error) {
+	if login == "valid_user_invalid_secret" {
+		return nil, errors.New("mock storage error for invalid secret")
+	}
 	return nil, nil
 }
 
