@@ -37,9 +37,9 @@ func newSecretHandlerProvider(appConfig config.AppConfig, appStorage storage.Sto
 }
 
 // TODO: maxFileSize should be moved to application configuration level instead of hardcoding it here
-const maxFileSize = 1024 * 1024 * 1 // 1MB
+var maxFileSize int64 = 1024 * 1024 * 1 // 1MB
 func parseMultiPartSecretRequest(r *http.Request, secret *model.Secret) error {
-	err := r.ParseMultipartForm(maxFileSize) // Max memory to use for parsing, in this case 10MB
+	err := r.ParseMultipartForm(maxFileSize) // Max RAM memory in bytes to use for parsing
 	if err != nil {
 		return fmt.Errorf("SaveSecretHandler error: %s", err.Error())
 	}

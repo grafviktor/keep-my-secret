@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/grafviktor/keep-my-secret/internal/api"
 	"github.com/grafviktor/keep-my-secret/internal/config"
@@ -62,6 +63,38 @@ func TestParseMultiPartSecretRequest(t *testing.T) {
 	if !reflect.DeepEqual(secret, expectedSecret) {
 		t.Errorf("Expected secret %+v, but got %+v", expectedSecret.File, secret.File)
 	}
+}
+
+func TestParseMultiPartSecretRequestNegative(t *testing.T) {
+	// Create a sample multipart form request with JSON data and a file
+	jsonData := `{"name": "mySecret", faulty`
+
+	// Create a buffer to hold the form data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Add the JSON data as a form field
+	_ = writer.WriteField("data", jsonData)
+
+	// Add a sample file to the form
+	fileContents := []byte("This is the file content")
+	fileWriter, _ := writer.CreateFormFile("file", "sample.txt")
+	//nolint:errcheck
+	fileWriter.Write(fileContents)
+
+	// Close the form writer
+	writer.Close()
+
+	// Create a sample HTTP request with the multipart form data
+	req := httptest.NewRequest("POST", "/your-api-endpoint", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Create a model.Secret instance for storing the parsed data
+	secret := &model.Secret{}
+
+	// Call the parseMultiPartSecretRequest function
+	err := parseMultiPartSecretRequest(req, secret)
+	require.Error(t, err)
 }
 
 func TestSaveSecretHandler(t *testing.T) {
