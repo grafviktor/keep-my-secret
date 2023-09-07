@@ -3,12 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type sampleStruct struct {
@@ -17,9 +20,18 @@ type sampleStruct struct {
 	ID    int    `json:"id"`
 }
 
+type testWriteJSONError struct{}
+
+func (c testWriteJSONError) MarshalJSON() ([]byte, error) {
+	return nil, fmt.Errorf("This is a custom error triggered during MarshalJSON")
+}
+
 func TestWriteJSON(t *testing.T) {
 	// Create a mock HTTP response recorder
 	w := httptest.NewRecorder()
+	// Call the WriteJSON function with faulty data
+	err := WriteJSON(w, http.StatusOK, &testWriteJSONError{})
+	require.Error(t, err)
 
 	u := sampleStruct{
 		Login: "tony",
@@ -27,11 +39,16 @@ func TestWriteJSON(t *testing.T) {
 		ID:    1,
 	}
 
-	// Call the WriteJSON function with the test data
-	err := WriteJSON(w, http.StatusOK, u)
+	header := http.Header{}
+	header.Add("User-Agent", "Unit test")
+	// Call the WriteJSON function headers
+	// err = WriteJSON(w, http.StatusOK, &sampleStruct{}, header)
+	err = WriteJSON(w, http.StatusOK, u, header)
 	if err != nil {
 		t.Errorf("WriteJSON returned an error: %v", err)
 	}
+
+	require.Equal(t, w.Header().Get("User-Agent"), "Unit test")
 
 	// Verify the HTTP status code
 	if w.Code != http.StatusOK {
@@ -59,18 +76,28 @@ func TestWriteJSON(t *testing.T) {
 }
 
 func TestReadJSON(t *testing.T) {
+	// Create a mock HTTP response recorder
+	w := httptest.NewRecorder()
+
 	// Create a mock HTTP request with a JSON payload
-	requestBody := `{"age": "tony", "email": "tony@tester", "id": 1}`
-	req, err := http.NewRequest("POST", "/example", strings.NewReader(requestBody))
+	maformedJSON := `{"age": "tony", "malformed...`
+	req, err := http.NewRequest("POST", "/example", strings.NewReader(maformedJSON))
 	if err != nil {
 		t.Fatalf("Failed to create HTTP request: %v", err)
 	}
 
-	// Create a mock HTTP response recorder
-	w := httptest.NewRecorder()
+	testData := sampleStruct{}
+	err = ReadJSON(w, req, &testData)
+	require.Error(t, err)
+
+	requestBody := `{"age": "tony", "email": "tony@tester", "id": 1}`
+	req, err = http.NewRequest("POST", "/example", strings.NewReader(requestBody))
+	if err != nil {
+		t.Fatalf("Failed to create HTTP request: %v", err)
+	}
 
 	// Define a struct to hold the JSON data
-	testData := sampleStruct{}
+	testData = sampleStruct{}
 
 	// Call the ReadJSON function with the mock request and the data struct
 	err = ReadJSON(w, req, &testData)

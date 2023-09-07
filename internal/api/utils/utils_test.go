@@ -104,6 +104,11 @@ func TestDecrypt(t *testing.T) {
 			}
 		})
 	}
+
+	// Test wrong AES key kength
+	aesKeyLength = 11
+	_, err := Decrypt([]byte("6tXPNaEV&!xC?3>#"), "12345")
+	require.Error(t, err)
 }
 
 func TestGenerateRandomPassword(t *testing.T) {
