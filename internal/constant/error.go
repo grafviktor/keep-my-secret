@@ -1,3 +1,4 @@
+// Package constant - contains common domain specific messages and errors
 package constant
 
 import "errors"

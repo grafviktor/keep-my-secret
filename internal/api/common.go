@@ -1,3 +1,4 @@
+// Package api contains constants which are used by API subpackages
 package api
 
 // Response - is a struct which unifies JSON response format for the client

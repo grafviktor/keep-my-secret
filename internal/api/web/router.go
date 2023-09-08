@@ -1,3 +1,4 @@
+// Package web - contains handlers and middlewares for the web server.
 package web
 
 import (

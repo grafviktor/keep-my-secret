@@ -23,6 +23,8 @@ type User struct {
 	DataKey         string `json:"-"`
 }
 
+// NewUser creates a new New User model with a random data key. The key should never be given to a user.
+// They will be automatically restored from the database when user logs in.
 func NewUser(login, password string) (*User, error) {
 	hashedPassword, err := hashString(password)
 	if err != nil {
@@ -51,6 +53,7 @@ func NewUser(login, password string) (*User, error) {
 	return &u, nil
 }
 
+// PasswordMatches check if password which was provided by the user during login process is correct
 func (u *User) PasswordMatches(plainText string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(plainText))
 	if err != nil {

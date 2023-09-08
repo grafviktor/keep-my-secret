@@ -1,3 +1,4 @@
+// Package keycache contains an in-memory key-value database definition for storing user encryption keys
 package keycache
 
 import (
@@ -16,6 +17,8 @@ type dataKeyCache struct {
 	keymap map[string]string
 }
 
+// GetInstance - creates new cache storage for user data encryption keys.
+// This is in-memory key-value storage
 func GetInstance() *dataKeyCache {
 	once.Do(
 		func() {
@@ -27,12 +30,14 @@ func GetInstance() *dataKeyCache {
 	return singleton
 }
 
+// Set - sets encryption key for a login name
 func (u *dataKeyCache) Set(login, key string) {
 	log.Printf("Set data key for user %s\n", login)
 
 	u.keymap[login] = key
 }
 
+// Get - gets encryption key for a login name from the storage
 func (u *dataKeyCache) Get(login string) (string, error) {
 	key, ok := u.keymap[login]
 

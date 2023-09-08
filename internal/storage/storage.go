@@ -1,3 +1,4 @@
+// Package storage defines main repository interfaces for data manipulation, no concrete implementations here
 package storage
 
 import (

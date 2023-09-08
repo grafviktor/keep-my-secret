@@ -107,9 +107,6 @@ func TestVerifyAuthHeader(t *testing.T) {
 	}
 	ac := config.New(envConfig)
 
-	// JWTSecret := ac.Secret
-	// JWTIssuer := ac.JWTIssuer
-
 	// Create a test HTTP request with an Authorization header
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {

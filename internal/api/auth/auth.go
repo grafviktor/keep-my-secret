@@ -1,3 +1,5 @@
+// Package auth is used for generating access and refresh tokens,
+// also it has methods to verify tokens validity
 package auth
 
 import (

@@ -13,11 +13,13 @@ import (
 // var shouldNotEncrypt = []string{"ID", "Type", "Title"}
 var shouldNotEncrypt = []string{"ID", "Encryptor"}
 
+// Encryptor is used for setting encrypting method for Secret model. This interface is used mainly for mocking
 type Encryptor interface {
 	Encrypt(secret *Secret, key, salt string) error
 	Decrypt(secret *Secret, key, salt string) error
 }
 
+// Secret is a model of secret object which the application receives from the client
 type Secret struct {
 	ID             int64     `json:"id"`
 	Type           string    `json:"type"`
@@ -34,6 +36,7 @@ type Secret struct {
 	Encryptor      Encryptor `json:"-"`
 }
 
+// SetEncryptor should be used for setting concrete encryptor implementation. Currently used in unit tests
 func (s *Secret) SetEncryptor(encryptor Encryptor) {
 	s.Encryptor = encryptor
 }
@@ -43,6 +46,7 @@ const (
 	typeBinary = "[]uint8"
 )
 
+// Encrypt - encrypts object using key and salt
 func (s *Secret) Encrypt(key, salt string) error {
 	if s.Encryptor != nil {
 		return s.Encryptor.Encrypt(s, key, salt)
@@ -78,13 +82,6 @@ func (s *Secret) Encrypt(key, salt string) error {
 		}
 
 		encrypted, err := utils.Encrypt(toEncrypt, key)
-		// var encrypted []byte
-		// var err error
-		// if s.Encryptor == nil {
-		// 	encrypted, err = utils.Encrypt(toEncrypt, key)
-		// } else {
-		// 	encrypted, err = s.Encryptor.Encrypt(toEncrypt, key)
-		// }
 		if err != nil {
 			return fmt.Errorf("secret.Encrypt: %s", err.Error())
 		}
@@ -99,6 +96,7 @@ func (s *Secret) Encrypt(key, salt string) error {
 	return nil
 }
 
+// Decrypt - decrypts object using key and salt
 func (s *Secret) Decrypt(key, salt string) error {
 	if s.Encryptor != nil {
 		return s.Encryptor.Decrypt(s, key, salt)
@@ -134,12 +132,6 @@ func (s *Secret) Decrypt(key, salt string) error {
 		}
 
 		decrypted, err := utils.Decrypt(toDecrypt, key)
-		// var decrypted []byte
-		// var err error
-		// if s.Encryptor == nil {
-		// } else {
-		// 	decrypted, err = s.Encryptor.Decrypt(toDecrypt, key)
-		// }
 		if err != nil {
 			return fmt.Errorf("secret encrypt: %s", err.Error())
 		}
