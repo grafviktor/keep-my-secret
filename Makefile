@@ -73,3 +73,11 @@ run:
 lint:
 	@echo 'Running linter'
 	@golangci-lint run
+
+## swagger: runs swag utility which generates API documentation
+# 'swag' should be installed: go install github.com/swaggo/swag/cmd/swag@latest
+# you should only run it from a folder where "main.go" file is located
+.PHONY: swagger
+swagger:
+	@echo 'Generating API docs in cmd/kms/swagger folder'
+	@cd cmd/kms/ && swag init --output ./swagger/
