@@ -267,6 +267,37 @@ func TestListSecretsHandler(t *testing.T) {
 	}
 }
 
+func TestListSecretsHandlerNegative(t *testing.T) {
+	appConfig := config.AppConfig{
+		Secret: "your_secret_key",
+	}
+
+	req, err := http.NewRequest("GET", "/api-endpoint", nil)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	handler := &apiRouteProvider{
+		config: appConfig,
+		storage: &MockStorage{
+			users: make(map[string]*model.User),
+		},
+		keyCache: &MockKeyCache{},
+	}
+
+	rr := httptest.NewRecorder()
+
+	ctx := context.WithValue(context.Background(), api.ContextUserLogin, "invalid_user")
+	handler.ListSecretsHandler(rr, req.WithContext(ctx))
+	require.Equal(t, rr.Code, http.StatusUnauthorized)
+
+	rr = httptest.NewRecorder()
+
+	ctx = context.WithValue(context.Background(), api.ContextUserLogin, "valid_user")
+	handler.ListSecretsHandler(rr, req.WithContext(ctx))
+	require.Equal(t, rr.Code, http.StatusInternalServerError)
+}
+
 func TestDeleteSecretHandler(t *testing.T) {
 	// Create a new chi router for testing.
 	r := chi.NewRouter()
